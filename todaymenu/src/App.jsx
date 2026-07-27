@@ -168,7 +168,7 @@ function RestaurantCard({ restaurant, liked, onToggle }) {
           }}
           aria-pressed={liked}
         >
-          {liked ? "♥" : "♡"} 찜
+          {liked ? "찜됨" : "찜하기"}
         </button>
       </div>
     </div>
@@ -200,8 +200,8 @@ function QuiznosModal({ open, onClose, items = [], updatedAt }) {
             {updatedAt && <p style={{ margin: "3px 0 0", fontSize: 11, color: C.text3 }}>업데이트: {updatedAt}</p>}
           </div>
           <button type="button" onClick={onClose}
-            style={{ background: "#F4F6FB", border: "none", borderRadius: 99, width: 28, height: 28, cursor: "pointer", color: C.text3, fontSize: 13 }}>
-            ✕
+            style={{ background: "#F4F6FB", border: "none", borderRadius: 99, padding: "4px 10px", cursor: "pointer", color: C.text3, fontSize: 12, fontWeight: 500 }}>
+            닫기
           </button>
         </div>
 
@@ -330,7 +330,7 @@ export default function App() {
       <header style={{ background: C.header, position: "sticky", top: 0, zIndex: 20 }}>
         <div style={{ maxWidth: 880, margin: "0 auto", padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <img src="/icons/rice.png" style={{ width: 22, height: 22 }} alt="" />
+            <span style={{ width: 22, height: 22, background: C.accent, borderRadius: 6, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "#fff" }}>식</span>
             <span style={{ fontSize: 14, fontWeight: 700, color: "#FFFFFF", letterSpacing: "-0.01em" }}>엔지미식회</span>
           </div>
           <span style={{ fontSize: 12, color: "#6B7A99" }}>
