@@ -8,7 +8,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "https://menu-worker.ngvmenu.workers.dev/",
+        target: "https://menu-worker.hojjang18.workers.dev/",
         changeOrigin: true,
       },
     },

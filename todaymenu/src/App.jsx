@@ -1,5 +1,5 @@
 import "./App.css";
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { getOrCreateAnonymousId } from "./utils/anonymousId";
 
 // ── Palette ──────────────────────────────────────────────────────────────────
@@ -20,6 +20,23 @@ const C = {
   red: "#DC2626",
   redLight: "#FEE2E2",
 };
+
+// ── Date helpers ─────────────────────────────────────────────────────────────
+function getKSTDate(offsetDays = 0) {
+  const d = new Date();
+  d.setDate(d.getDate() + offsetDays);
+  return new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "Asia/Seoul",
+    year: "numeric", month: "2-digit", day: "2-digit",
+  }).format(d);
+}
+
+function formatDateLabel(isoDate) {
+  const [y, m, d] = isoDate.split("-").map(Number);
+  const dt = new Date(y, m - 1, d);
+  const days = ["일", "월", "화", "수", "목", "금", "토"];
+  return `${m}월 ${d}일 ${days[dt.getDay()]}요일`;
+}
 
 // ── Lunch status helpers ─────────────────────────────────────────────────────
 function parseLunchHours(str) {
@@ -57,69 +74,42 @@ function StatusBadge({ hoursStr }) {
     const id = setInterval(() => setS(getLunchStatus(hoursStr)), 30_000);
     return () => clearInterval(id);
   }, [hoursStr]);
-
   if (!s) return null;
 
-  const style = {
-    display: "inline-flex", alignItems: "center", gap: 5,
-    borderRadius: 99, padding: "2px 10px",
-    fontSize: 11, fontWeight: 600, letterSpacing: "0.01em",
-    whiteSpace: "nowrap",
-  };
+  const badge = (bg, color, dot, dotColor, label) => (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, borderRadius: 99, padding: "2px 10px", fontSize: 11, fontWeight: 600, background: bg, color, whiteSpace: "nowrap" }}>
+      <span className={s.state === "open" ? "pulse" : ""} style={{ width: 6, height: 6, borderRadius: 99, background: dotColor, display: "inline-block" }} />
+      {label}
+    </span>
+  );
 
   if (s.state === "before") {
     const h = Math.floor(s.diff / 60), m = s.diff % 60;
-    return (
-      <span style={{ ...style, background: C.amberLight, color: C.amber }}>
-        <span style={{ width: 6, height: 6, borderRadius: 99, background: "#F59E0B", display: "inline-block" }} />
-        {h > 0 ? `${h}시간 ${m}분 후` : `${m}분 후 오픈`}
-      </span>
-    );
+    return badge(C.amberLight, C.amber, null, "#F59E0B", h > 0 ? `${h}시간 ${m}분 후 오픈` : `${m}분 후 오픈`);
   }
-  if (s.state === "closed") {
-    return (
-      <span style={{ ...style, background: C.redLight, color: C.red }}>
-        <span style={{ width: 6, height: 6, borderRadius: 99, background: C.red, display: "inline-block" }} />
-        오늘 종료
-      </span>
-    );
-  }
-  return (
-    <span style={{ ...style, background: C.greenLight, color: C.green }}>
-      <span className="pulse" style={{ width: 6, height: 6, borderRadius: 99, background: C.green, display: "inline-block" }} />
-      영업중 · {s.diff}분 후 종료
-    </span>
-  );
+  if (s.state === "closed") return badge(C.redLight, C.red, null, C.red, "오늘 종료");
+  return badge(C.greenLight, C.green, true, C.green, `영업중 · ${s.diff}분 후 종료`);
 }
 
 // ── Restaurant card ──────────────────────────────────────────────────────────
 function RestaurantCard({ restaurant, liked, onToggle }) {
-  const { id, name, hours, lunch } = restaurant;
+  const { name, hours, lunch } = restaurant;
   const items = (Array.isArray(lunch) ? lunch : []).map(parseMenuLine);
 
   return (
-    <div style={{
-      background: C.card, borderRadius: 20,
-      boxShadow: `0 0 0 1px ${C.border}`,
-      display: "flex", flexDirection: "column",
-    }}>
-      {/* Card header */}
+    <div style={{ background: C.card, borderRadius: 20, boxShadow: `0 0 0 1px ${C.border}`, display: "flex", flexDirection: "column" }}>
       <div style={{ padding: "20px 20px 16px" }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
           <div>
-            <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: C.text1, lineHeight: 1.3 }}>{name}</p>
-            {hours && (
-              <p style={{ margin: "3px 0 0", fontSize: 11, color: C.text3 }}>{hours}</p>
-            )}
+            <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: C.text1 }}>{name}</p>
+            {hours && <p style={{ margin: "3px 0 0", fontSize: 11, color: C.text3 }}>{hours}</p>}
           </div>
           <StatusBadge hoursStr={hours} />
         </div>
       </div>
 
-      {/* Divider */}
       <div style={{ height: 1, background: "#EEF0F6", margin: "0 20px" }} />
 
-      {/* Menu list */}
       <div style={{ flex: 1, padding: "16px 20px" }}>
         {items.length === 0 ? (
           <p style={{ margin: 0, fontSize: 13, color: C.text3 }}>메뉴 정보 없음</p>
@@ -127,25 +117,14 @@ function RestaurantCard({ restaurant, liked, onToggle }) {
           <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 6 }}>
             {items.map((item, i) =>
               item.type === "section" ? (
-                <li key={i} style={{
-                  display: "flex", justifyContent: "space-between", alignItems: "baseline",
-                  paddingTop: i === 0 ? 0 : 6,
-                }}>
-                  <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: C.accent }}>
-                    {item.label}
-                  </span>
-                  {item.extra && (
-                    <span style={{ fontSize: 10, fontWeight: 700, color: C.accent }}>{item.extra}</span>
-                  )}
+                <li key={i} style={{ display: "flex", justifyContent: "space-between", paddingTop: i === 0 ? 0 : 6 }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: C.accent }}>{item.label}</span>
+                  {item.extra && <span style={{ fontSize: 10, fontWeight: 700, color: C.accent }}>{item.extra}</span>}
                 </li>
               ) : (
                 <li key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
                   <span style={{ fontSize: 13, color: C.text1, lineHeight: 1.45 }}>{item.name}</span>
-                  {item.price && (
-                    <span style={{ fontSize: 11, color: C.text3, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>
-                      {item.price}
-                    </span>
-                  )}
+                  {item.price && <span style={{ fontSize: 11, color: C.text3, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{item.price}</span>}
                 </li>
               )
             )}
@@ -153,21 +132,9 @@ function RestaurantCard({ restaurant, liked, onToggle }) {
         )}
       </div>
 
-      {/* Like button */}
       <div style={{ padding: "0 20px 16px", display: "flex", justifyContent: "flex-end" }}>
-        <button
-          type="button"
-          onClick={onToggle}
-          style={{
-            display: "inline-flex", alignItems: "center", gap: 5,
-            borderRadius: 99, padding: "4px 12px",
-            fontSize: 12, fontWeight: 600, cursor: "pointer",
-            border: "none", transition: "background 0.15s",
-            background: liked ? C.redLight : "#F4F6FB",
-            color: liked ? C.red : C.text3,
-          }}
-          aria-pressed={liked}
-        >
+        <button type="button" onClick={onToggle} aria-pressed={liked}
+          style={{ display: "inline-flex", alignItems: "center", gap: 5, borderRadius: 99, padding: "4px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer", border: "none", background: liked ? C.redLight : "#F4F6FB", color: liked ? C.red : C.text3 }}>
           {liked ? "찜됨" : "찜하기"}
         </button>
       </div>
@@ -175,63 +142,178 @@ function RestaurantCard({ restaurant, liked, onToggle }) {
   );
 }
 
+// ── Order calculator ─────────────────────────────────────────────────────────
+let _rowId = 0;
+const emptyRow = () => ({ id: ++_rowId, name: "", sandwichId: "", drinkId: "" });
+
+function OrderCalculator({ sandwiches, drinks }) {
+  const [rows, setRows] = useState([emptyRow()]);
+  const [copied, setCopied] = useState(false);
+
+  const getPrice = (row) => {
+    const s = sandwiches.find(s => s.id === row.sandwichId);
+    const d = drinks.find(d => d.id === row.drinkId);
+    return (s?.price || 0) + (d?.price || 0);
+  };
+
+  const total = rows.reduce((sum, r) => sum + getPrice(r), 0);
+  const hasOrders = rows.some(r => r.sandwichId || r.drinkId);
+
+  const update = (id, key, val) => setRows(prev => prev.map(r => r.id === id ? { ...r, [key]: val } : r));
+  const addRow = () => setRows(prev => [...prev, emptyRow()]);
+  const removeRow = (id) => setRows(prev => prev.length > 1 ? prev.filter(r => r.id !== id) : prev);
+
+  const handleCopy = () => {
+    const lines = rows
+      .filter(r => r.sandwichId || r.drinkId)
+      .map(r => {
+        const s = sandwiches.find(s => s.id === r.sandwichId);
+        const d = drinks.find(d => d.id === r.drinkId);
+        const amt = getPrice(r);
+        return `${r.name || "미입력"}: ${s?.name || "-"}${d && d.price > 0 ? ` + ${d.name}` : ""} = ${amt.toLocaleString()}원`;
+      });
+    navigator.clipboard.writeText([...lines, ``, `합계: ${total.toLocaleString()}원`].join("\n"));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const inputStyle = { width: "100%", border: `1px solid ${C.border}`, borderRadius: 8, padding: "5px 8px", fontSize: 12, color: C.text1, background: C.bg, outline: "none" };
+  const selectStyle = { ...inputStyle, cursor: "pointer" };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      {/* Table header */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1.6fr 1.2fr auto auto", gap: 6, alignItems: "center" }}>
+        {["이름", "샌드위치", "음료", "금액", ""].map((h, i) => (
+          <span key={i} style={{ fontSize: 10, fontWeight: 700, color: C.text3, letterSpacing: "0.05em" }}>{h}</span>
+        ))}
+      </div>
+
+      {/* Rows */}
+      {rows.map(row => {
+        const price = getPrice(row);
+        return (
+          <div key={row.id} style={{ display: "grid", gridTemplateColumns: "1fr 1.6fr 1.2fr auto auto", gap: 6, alignItems: "center" }}>
+            <input
+              value={row.name}
+              onChange={e => update(row.id, "name", e.target.value)}
+              placeholder="이름"
+              style={inputStyle}
+            />
+            <select value={row.sandwichId} onChange={e => update(row.id, "sandwichId", e.target.value)} style={selectStyle}>
+              <option value="">선택</option>
+              {sandwiches.map(s => (
+                <option key={s.id} value={s.id}>{s.name}{s.price ? ` (${s.price.toLocaleString()}원)` : ""}</option>
+              ))}
+            </select>
+            <select value={row.drinkId} onChange={e => update(row.id, "drinkId", e.target.value)} style={selectStyle}>
+              <option value="">없음</option>
+              {drinks.map(d => (
+                <option key={d.id} value={d.id}>{d.name}{d.price > 0 ? ` (${d.price.toLocaleString()}원)` : ""}</option>
+              ))}
+            </select>
+            <span style={{ fontSize: 12, fontWeight: 600, color: price > 0 ? C.text1 : C.text3, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>
+              {price > 0 ? `${price.toLocaleString()}원` : "-"}
+            </span>
+            <button type="button" onClick={() => removeRow(row.id)}
+              style={{ background: "none", border: "none", color: C.text3, cursor: "pointer", fontSize: 16, padding: "0 2px", lineHeight: 1 }}>
+              ✕
+            </button>
+          </div>
+        );
+      })}
+
+      {/* Add row + total */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 4 }}>
+        <button type="button" onClick={addRow}
+          style={{ background: C.accentLight, color: C.accent, border: "none", borderRadius: 8, padding: "6px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+          + 사람 추가
+        </button>
+        <span style={{ fontSize: 14, fontWeight: 700, color: C.text1, fontVariantNumeric: "tabular-nums" }}>
+          합계 {total.toLocaleString()}원
+        </span>
+      </div>
+
+      <div style={{ height: 1, background: C.border }} />
+
+      <button type="button" onClick={handleCopy} disabled={!hasOrders}
+        style={{ background: hasOrders ? C.header : C.border, color: hasOrders ? "#fff" : C.text3, border: "none", borderRadius: 10, padding: "10px 0", fontSize: 13, fontWeight: 600, cursor: hasOrders ? "pointer" : "default", transition: "background 0.15s" }}>
+        {copied ? "복사됨!" : "주문 내역 텍스트로 복사"}
+      </button>
+    </div>
+  );
+}
+
 // ── Quiznos modal ────────────────────────────────────────────────────────────
-function QuiznosModal({ open, onClose, items = [], updatedAt }) {
+function QuiznosModal({ open, onClose, items = [], drinks = [], updatedAt }) {
+  const [tab, setTab] = useState("menu");
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
+
   if (!open) return null;
+
+  const tabBtn = (id, label) => (
+    <button type="button" onClick={() => setTab(id)}
+      style={{ flex: 1, padding: "8px 0", fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer", borderRadius: 8, transition: "all 0.15s",
+        background: tab === id ? C.header : "transparent",
+        color: tab === id ? "#fff" : C.text3 }}>
+      {label}
+    </button>
+  );
 
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
       <button type="button" aria-label="닫기" onClick={onClose}
         style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.45)", border: "none", cursor: "pointer" }} />
-      <div style={{
-        position: "relative", width: "100%", maxWidth: 480,
-        background: C.card, borderRadius: "24px 24px 0 0",
-        padding: 24, boxShadow: "0 -8px 40px rgba(0,0,0,0.15)",
-      }}>
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16 }}>
-          <div>
-            <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: C.text1 }}>퀴즈노스 지원 메뉴</p>
-            {updatedAt && <p style={{ margin: "3px 0 0", fontSize: 11, color: C.text3 }}>업데이트: {updatedAt}</p>}
-          </div>
+      <div style={{ position: "relative", width: "100%", maxWidth: 520, background: C.card, borderRadius: "24px 24px 0 0", padding: 24, boxShadow: "0 -8px 40px rgba(0,0,0,0.15)", maxHeight: "90vh", display: "flex", flexDirection: "column" }}>
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+          <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: C.text1 }}>퀴즈노스</p>
           <button type="button" onClick={onClose}
             style={{ background: "#F4F6FB", border: "none", borderRadius: 99, width: 28, height: 28, cursor: "pointer", color: C.text3, fontSize: 13 }}>
             ✕
           </button>
         </div>
 
-        <div style={{ maxHeight: "60vh", overflowY: "auto", display: "flex", flexDirection: "column", gap: 8 }}>
-          {items.map((it) => (
-            <div key={it.id} className="qz-item" style={{ borderRadius: 14, padding: 12, background: C.bg, display: "flex", gap: 12, alignItems: "center" }}>
-              {it.image && (
-                <img src={it.image} alt={it.name}
-                  style={{ width: 48, height: 48, borderRadius: 12, objectFit: "cover", flexShrink: 0 }}
-                  onError={(e) => { e.currentTarget.style.display = "none"; }} />
-              )}
-              <div style={{ minWidth: 0 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: C.text1 }}>{it.name}</span>
-                  {typeof it.calorie === "number" && (
-                    <span style={{ fontSize: 10, fontWeight: 500, color: C.text3, background: C.border, borderRadius: 99, padding: "1px 7px" }}>
-                      {it.calorie} kcal
-                    </span>
-                  )}
-                </div>
-                {it.desc && <p style={{ margin: "3px 0 0", fontSize: 11, color: C.text3, lineHeight: 1.5 }}>{it.desc}</p>}
-              </div>
-            </div>
-          ))}
+        {/* Tabs */}
+        <div style={{ display: "flex", gap: 4, background: C.bg, borderRadius: 10, padding: 4, marginBottom: 16 }}>
+          {tabBtn("menu", "메뉴")}
+          {tabBtn("calculator", "주문 계산")}
         </div>
 
-        <button type="button" onClick={onClose}
-          style={{ marginTop: 16, width: "100%", background: C.header, color: "#fff", border: "none", borderRadius: 99, padding: "10px 0", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
-          닫기
-        </button>
+        {/* Content */}
+        <div style={{ overflowY: "auto", flex: 1 }}>
+          {tab === "menu" ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {updatedAt && <p style={{ margin: "0 0 4px", fontSize: 11, color: C.text3 }}>업데이트: {updatedAt}</p>}
+              {items.map((it) => (
+                <div key={it.id} className="qz-item" style={{ borderRadius: 14, padding: 12, background: C.bg, display: "flex", gap: 12, alignItems: "center" }}>
+                  {it.image && (
+                    <img src={it.image} alt={it.name} style={{ width: 48, height: 48, borderRadius: 12, objectFit: "cover", flexShrink: 0 }}
+                      onError={(e) => { e.currentTarget.style.display = "none"; }} />
+                  )}
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: C.text1 }}>{it.name}</span>
+                      {it.price && <span style={{ fontSize: 11, fontWeight: 600, color: C.accent }}>{it.price.toLocaleString()}원</span>}
+                      {typeof it.calorie === "number" && (
+                        <span style={{ fontSize: 10, color: C.text3, background: C.border, borderRadius: 99, padding: "1px 7px" }}>{it.calorie} kcal</span>
+                      )}
+                    </div>
+                    {it.desc && <p style={{ margin: "3px 0 0", fontSize: 11, color: C.text3, lineHeight: 1.5 }}>{it.desc}</p>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <OrderCalculator sandwiches={items} drinks={drinks} />
+          )}
+        </div>
       </div>
     </div>
   );
@@ -239,13 +321,18 @@ function QuiznosModal({ open, onClose, items = [], updatedAt }) {
 
 // ── App ───────────────────────────────────────────────────────────────────────
 export default function App() {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const TODAY = getKSTDate(0);
+  const TOMORROW = getKSTDate(1);
+
+  const [selectedDate, setSelectedDate] = useState(TODAY);
+  const [dataByDate, setDataByDate] = useState({});
+  const [loadingDate, setLoadingDate] = useState(null);
+  const [errorByDate, setErrorByDate] = useState({});
   const [likes, setLikes] = useState({});
   const [anonymousId, setAnonymousId] = useState(null);
   const [quiznosOpen, setQuiznosOpen] = useState(false);
   const [quiznosItems, setQuiznosItems] = useState([]);
+  const [quiznosDrinks, setQuiznosDrinks] = useState([]);
   const [quiznosUpdatedAt, setQuiznosUpdatedAt] = useState("");
 
   const API_BASE =
@@ -256,24 +343,28 @@ export default function App() {
 
   useEffect(() => { setAnonymousId(getOrCreateAnonymousId()); }, []);
 
-  useEffect(() => {
-    let alive = true;
-    setLoading(true);
-    fetch(`${API_BASE}/api/menu/today`, { cache: "no-store" })
+  const fetchMenu = useCallback((date) => {
+    if (dataByDate[date] || loadingDate === date) return;
+    setLoadingDate(date);
+    fetch(`${API_BASE}/api/menu/today?date=${date}`, { cache: "no-store" })
       .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
-      .then(json => { if (alive) { setData(json); setError(""); } })
-      .catch(e => { if (alive) setError(e?.message || "메뉴를 불러오지 못했습니다."); })
-      .finally(() => { if (alive) setLoading(false); });
-    return () => { alive = false; };
-  }, []);
+      .then(json => {
+        setDataByDate(prev => ({ ...prev, [date]: json }));
+        setErrorByDate(prev => ({ ...prev, [date]: null }));
+      })
+      .catch(e => setErrorByDate(prev => ({ ...prev, [date]: e?.message || "오류" })))
+      .finally(() => setLoadingDate(null));
+  }, [dataByDate, loadingDate, API_BASE]);
+
+  useEffect(() => { fetchMenu(TODAY); }, [TODAY]);
+  useEffect(() => { if (selectedDate === TOMORROW) fetchMenu(TOMORROW); }, [selectedDate, TOMORROW]);
 
   useEffect(() => {
     if (!anonymousId) return;
-    let alive = true;
     fetch(`${API_BASE}/api/favorites`, { headers: { "X-Anonymous-Id": anonymousId } })
       .then(r => r.ok ? r.json() : null)
       .then(json => {
-        if (!alive || !json) return;
+        if (!json) return;
         const favs = Array.isArray(json.favorites) ? json.favorites : [];
         setLikes(prev => {
           const next = { ...prev };
@@ -282,7 +373,6 @@ export default function App() {
         });
       })
       .catch(() => {});
-    return () => { alive = false; };
   }, [anonymousId]);
 
   useEffect(() => {
@@ -290,6 +380,7 @@ export default function App() {
       .then(r => r.json())
       .then(json => {
         setQuiznosItems(Array.isArray(json.items) ? json.items : []);
+        setQuiznosDrinks(Array.isArray(json.drinks) ? json.drinks : []);
         setQuiznosUpdatedAt(json.updatedAt || "");
       })
       .catch(() => {});
@@ -313,16 +404,16 @@ export default function App() {
     }
   }, [anonymousId, likes]);
 
-  const dateLabel = useMemo(() => {
-    if (!data?.date) return "";
-    const [y, m, d] = data.date.split("-").map(Number);
-    const dt = new Date(y, m - 1, d);
-    const days = ["일", "월", "화", "수", "목", "금", "토"];
-    return `${m}월 ${d}일 ${days[dt.getDay()]}요일`;
-  }, [data?.date]);
+  const data = dataByDate[selectedDate];
+  const loading = loadingDate === selectedDate || (!data && !errorByDate[selectedDate]);
+  const error = errorByDate[selectedDate];
+  const isTomorrow = selectedDate === TOMORROW;
+  const noTomorrowData = isTomorrow && data?.restaurants?.every(r => r.lunch?.length === 0);
 
   const r301 = data?.restaurants?.find(r => r.id === "301");
   const dure = data?.restaurants?.find(r => r.id === "dure");
+
+  const dateLabel = selectedDate ? formatDateLabel(selectedDate) : "";
 
   return (
     <div style={{ minHeight: "100dvh", background: C.bg, fontFamily: "'Pretendard', 'Noto Sans KR', -apple-system, sans-serif" }}>
@@ -333,25 +424,43 @@ export default function App() {
             <span style={{ width: 22, height: 22, background: C.accent, borderRadius: 6, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "#fff" }}>식</span>
             <span style={{ fontSize: 14, fontWeight: 700, color: "#FFFFFF", letterSpacing: "-0.01em" }}>엔지미식회</span>
           </div>
-          <span style={{ fontSize: 12, color: "#6B7A99" }}>
-            {loading ? "불러오는 중…" : dateLabel || "오늘 식단"}
-          </span>
+          <span style={{ fontSize: 12, color: "#6B7A99" }}>{dateLabel}</span>
         </div>
       </header>
+
+      {/* Date tabs */}
+      <div style={{ background: C.card, borderBottom: `1px solid ${C.border}` }}>
+        <div style={{ maxWidth: 880, margin: "0 auto", padding: "0 20px", display: "flex" }}>
+          {[
+            { date: TODAY, label: "오늘" },
+            { date: TOMORROW, label: "내일" },
+          ].map(({ date, label }) => (
+            <button key={date} type="button" onClick={() => setSelectedDate(date)}
+              style={{ padding: "12px 20px", fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer", background: "none", borderBottom: selectedDate === date ? `2px solid ${C.accent}` : "2px solid transparent", color: selectedDate === date ? C.accent : C.text3, transition: "all 0.15s" }}>
+              {label} <span style={{ fontSize: 11, fontWeight: 400, marginLeft: 2 }}>
+                {label === "오늘" ? formatDateLabel(TODAY).replace("요일", "") : formatDateLabel(TOMORROW).replace("요일", "")}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* Content */}
       <main style={{ maxWidth: 880, margin: "0 auto", padding: "24px 20px 32px" }}>
         {loading ? (
-          <div style={{ display: "flex", justifyContent: "center", padding: "60px 0", fontSize: 13, color: C.text3 }}>
-            메뉴 불러오는 중…
-          </div>
+          <div style={{ display: "flex", justifyContent: "center", padding: "60px 0", fontSize: 13, color: C.text3 }}>메뉴 불러오는 중…</div>
         ) : error ? (
           <div style={{ background: C.redLight, borderRadius: 16, padding: 20 }}>
             <p style={{ margin: 0, fontSize: 13, color: C.red }}>{error}</p>
-            <button type="button" onClick={() => window.location.reload()}
+            <button type="button" onClick={() => { setErrorByDate(p => ({ ...p, [selectedDate]: null })); fetchMenu(selectedDate); }}
               style={{ marginTop: 12, background: C.red, color: "#fff", border: "none", borderRadius: 99, padding: "6px 16px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
-              새로고침
+              다시 시도
             </button>
+          </div>
+        ) : noTomorrowData ? (
+          <div style={{ background: C.card, borderRadius: 16, padding: 32, textAlign: "center", boxShadow: `0 0 0 1px ${C.border}` }}>
+            <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: C.text2 }}>내일 메뉴는 아직 준비되지 않았습니다</p>
+            <p style={{ margin: "8px 0 0", fontSize: 12, color: C.text3 }}>매일 오전 중 업데이트됩니다</p>
           </div>
         ) : (
           <div style={{ display: "grid", gap: 16, gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))" }}>
@@ -369,12 +478,18 @@ export default function App() {
           </button>
           <button type="button" onClick={() => setQuiznosOpen(true)}
             style={{ background: C.card, color: C.text2, border: `1px solid ${C.border}`, borderRadius: 99, padding: "10px 0", fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
-            퀴즈노스 메뉴
+            퀴즈노스 주문
           </button>
         </div>
       </main>
 
-      <QuiznosModal open={quiznosOpen} onClose={() => setQuiznosOpen(false)} items={quiznosItems} updatedAt={quiznosUpdatedAt} />
+      <QuiznosModal
+        open={quiznosOpen}
+        onClose={() => setQuiznosOpen(false)}
+        items={quiznosItems}
+        drinks={quiznosDrinks}
+        updatedAt={quiznosUpdatedAt}
+      />
     </div>
   );
 }
