@@ -302,17 +302,24 @@ export default {
 				});
 			}
 
-			// Today or past: try cache first
-			if (!fresh) {
+			// 과거 날짜: KV에 없으면 데이터 없음 반환 (소스는 오늘 메뉴만 제공)
+			if (targetDate < today) {
 				const byDate = await getMenuByDate(env, targetDate);
 				if (byDate) return jsonResponse(byDate);
-				if (targetDate === today) {
-					const cached = await getCachedToday(env);
-					if (cached) return jsonResponse(cached);
-				}
+				return jsonResponse({
+					date: targetDate, sourceUrl: SOURCE_URL, updatedAt: null,
+					restaurants: [], note: "해당 날짜의 메뉴 데이터가 없습니다.",
+				});
 			}
 
-			// Fetch fresh from source
+			// 오늘: 캐시 우선, 없으면 소스 fetch
+			if (!fresh) {
+				const byDate = await getMenuByDate(env, today);
+				if (byDate) return jsonResponse(byDate);
+				const cached = await getCachedToday(env);
+				if (cached) return jsonResponse(cached);
+			}
+
 			try {
 				const data = await buildMenuJson();
 				ctx.waitUntil(Promise.all([

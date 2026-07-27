@@ -407,8 +407,7 @@ export default function App() {
   const data = dataByDate[selectedDate];
   const loading = loadingDate === selectedDate || (!data && !errorByDate[selectedDate]);
   const error = errorByDate[selectedDate];
-  const isTomorrow = selectedDate === TOMORROW;
-  const noTomorrowData = isTomorrow && data?.restaurants?.every(r => r.lunch?.length === 0);
+  const noMenuData = data?.restaurants?.every(r => r.lunch?.length === 0);
 
   const r301 = data?.restaurants?.find(r => r.id === "301");
   const dure = data?.restaurants?.find(r => r.id === "dure");
@@ -470,10 +469,24 @@ export default function App() {
               다시 시도
             </button>
           </div>
-        ) : noTomorrowData ? (
+        ) : noMenuData ? (
           <div style={{ background: C.card, borderRadius: 16, padding: 32, textAlign: "center", boxShadow: `0 0 0 1px ${C.border}` }}>
-            <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: C.text2 }}>내일 메뉴는 아직 준비되지 않았습니다</p>
-            <p style={{ margin: "8px 0 0", fontSize: 12, color: C.text3 }}>매일 오전 중 업데이트됩니다</p>
+            <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: C.text2 }}>
+              {selectedDate < TODAY ? "해당 날짜의 메뉴 데이터가 없습니다" :
+               selectedDate === TODAY ? "오늘 메뉴를 불러오지 못했습니다" :
+               "아직 업데이트되지 않았습니다"}
+            </p>
+            <p style={{ margin: "8px 0 0", fontSize: 12, color: C.text3 }}>
+              {selectedDate < TODAY ? "서비스 시작 이전 날짜이거나 기록이 없습니다" :
+               selectedDate === TODAY ? "잠시 후 다시 시도해주세요" :
+               "내일 메뉴는 당일 오전 중 업데이트됩니다"}
+            </p>
+            {selectedDate !== TODAY && (
+              <button type="button" onClick={() => setSelectedDate(TODAY)}
+                style={{ marginTop: 16, background: C.accentLight, color: C.accent, border: "none", borderRadius: 8, padding: "7px 16px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+                오늘 메뉴 보기
+              </button>
+            )}
           </div>
         ) : (
           <div style={{ display: "grid", gap: 16, gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))" }}>
