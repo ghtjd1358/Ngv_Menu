@@ -200,8 +200,8 @@ function QuiznosModal({ open, onClose, items = [], updatedAt }) {
             {updatedAt && <p style={{ margin: "3px 0 0", fontSize: 11, color: C.text3 }}>업데이트: {updatedAt}</p>}
           </div>
           <button type="button" onClick={onClose}
-            style={{ background: "#F4F6FB", border: "none", borderRadius: 99, padding: "4px 10px", cursor: "pointer", color: C.text3, fontSize: 12, fontWeight: 500 }}>
-            닫기
+            style={{ background: "#F4F6FB", border: "none", borderRadius: 99, width: 28, height: 28, cursor: "pointer", color: C.text3, fontSize: 13 }}>
+            ✕
           </button>
         </div>
 
