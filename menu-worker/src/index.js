@@ -281,6 +281,21 @@ export default {
 
 		if (req.method === "OPTIONS") return corsResponse();
 
+		// GET /api/debug/form - 사이트 폼 구조 확인용 (임시)
+		if (url.pathname === "/api/debug/form") {
+			try {
+				const html = await fetchSourceHtml();
+				const formMatch = html.match(/<form[\s\S]*?<\/form>/i);
+				const inputs = [...html.matchAll(/<input[^>]+>/gi)].map(m => m[0]).slice(0, 20);
+				return new Response(JSON.stringify({
+					form: formMatch ? formMatch[0].slice(0, 800) : "form not found",
+					inputs,
+				}, null, 2), { headers: { "content-type": "application/json" } });
+			} catch (e) {
+				return new Response(JSON.stringify({ error: e.message }), { headers: { "content-type": "application/json" } });
+			}
+		}
+
 		// GET /api/menu/today?date=YYYY-MM-DD&fresh=1
 		if (url.pathname === "/api/menu/today") {
 			const today = todayISO_KST();
