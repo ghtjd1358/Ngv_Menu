@@ -334,29 +334,6 @@ export default {
 			return corsResponse();
 		}
 
-		// GET /api/debug/html - 소스 HTML 앞부분 확인용 (임시)
-		if (url.pathname === "/api/debug/html") {
-			try {
-				const html = await fetchSourceHtml();
-				const dureRow = findRowHtmlByRestaurantName(html, "두레미담");
-				const r301Row = findRowHtmlByRestaurantName(html, "301동식당");
-				const dureLunchTd = dureRow ? extractTd(dureRow, "lunch") : "ROW_NOT_FOUND";
-				const r301LunchTd = r301Row ? extractTd(r301Row, "lunch") : "ROW_NOT_FOUND";
-				return new Response(JSON.stringify({
-					htmlLength: html.length,
-					htmlHead: html.slice(0, 500),
-					dureRowFound: !!dureRow,
-					r301RowFound: !!r301Row,
-					dureLunchTdLength: dureLunchTd.length,
-					dureLunchTdHead: dureLunchTd.slice(0, 300),
-					r301LunchTdLength: r301LunchTd.length,
-					r301LunchTdHead: r301LunchTd.slice(0, 300),
-				}, null, 2), { headers: { "content-type": "application/json" } });
-			} catch (e) {
-				return new Response(JSON.stringify({ error: e?.message }), { headers: { "content-type": "application/json" } });
-			}
-		}
-
 		// GET /api/menu/today
 		if (url.pathname === "/api/menu/today") {
 			const fresh = url.searchParams.get("fresh") === "1";
