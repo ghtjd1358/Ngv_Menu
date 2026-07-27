@@ -271,6 +271,18 @@ export default {
 
 		if (req.method === "OPTIONS") return corsResponse();
 
+		// GET /api/debug/form
+		if (url.pathname === "/api/debug/form") {
+			try {
+				const html = await fetchSourceHtml();
+				const idx = html.indexOf('class="datetime"');
+				const context = html.slice(Math.max(0, idx - 600), idx + 200);
+				return new Response(JSON.stringify({ context }, null, 2), { headers: { "content-type": "application/json" } });
+			} catch (e) {
+				return new Response(JSON.stringify({ error: e.message }), { headers: { "content-type": "application/json" } });
+			}
+		}
+
 		// GET /api/menu/today?date=YYYY-MM-DD&fresh=1
 		if (url.pathname === "/api/menu/today") {
 			const today = todayISO_KST();
