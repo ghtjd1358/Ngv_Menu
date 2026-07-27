@@ -271,6 +271,20 @@ export default {
 
 		if (req.method === "OPTIONS") return corsResponse();
 
+		// GET /api/menu/dates - KV에 캐시된 날짜 목록
+		if (url.pathname === "/api/menu/dates") {
+			try {
+				const list = await env.MENU_KV.list({ prefix: "menu:" });
+				const dates = list.keys
+					.map(k => k.name.replace("menu:", ""))
+					.filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d))
+					.sort();
+				return jsonResponse({ dates });
+			} catch (e) {
+				return jsonResponse({ error: e?.message || "list failed" }, 500);
+			}
+		}
+
 		// GET /api/debug/form
 		if (url.pathname === "/api/debug/form") {
 			try {

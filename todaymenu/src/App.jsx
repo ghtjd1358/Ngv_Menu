@@ -142,6 +142,109 @@ function RestaurantCard({ restaurant, liked, onToggle }) {
   );
 }
 
+// ── Calendar ─────────────────────────────────────────────────────────────────
+const DOW = ["월", "화", "수", "목", "금", "토", "일"];
+
+function Calendar({ selectedDate, availableDates, today, onSelect }) {
+  const [view, setView] = useState(() => {
+    const [y, m] = selectedDate.split("-").map(Number);
+    return { year: y, month: m };
+  });
+
+  useEffect(() => {
+    const [y, m] = selectedDate.split("-").map(Number);
+    setView({ year: y, month: m });
+  }, [selectedDate]);
+
+  const available = useMemo(() => new Set(availableDates), [availableDates]);
+
+  const days = useMemo(() => {
+    const first = new Date(view.year, view.month - 1, 1);
+    const last = new Date(view.year, view.month, 0);
+    const offset = (first.getDay() + 6) % 7; // Mon=0
+    const cells = Array(offset).fill(null);
+    for (let d = 1; d <= last.getDate(); d++) cells.push(d);
+    while (cells.length % 7 !== 0) cells.push(null);
+    return cells;
+  }, [view]);
+
+  const toISO = (d) =>
+    d ? `${view.year}-${String(view.month).padStart(2, "0")}-${String(d).padStart(2, "0")}` : null;
+
+  const moveMonth = (dir) =>
+    setView(v => {
+      const m = v.month + dir;
+      if (m < 1) return { year: v.year - 1, month: 12 };
+      if (m > 12) return { year: v.year + 1, month: 1 };
+      return { ...v, month: m };
+    });
+
+  const btnStyle = { background: "none", border: "none", cursor: "pointer", color: C.text2, fontSize: 18, padding: "0 8px", lineHeight: 1 };
+
+  return (
+    <div style={{ background: C.card, borderRadius: 16, boxShadow: `0 0 0 1px ${C.border}`, padding: "16px 16px 12px", marginBottom: 16 }}>
+      {/* Month nav */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+        <button style={btnStyle} onClick={() => moveMonth(-1)}>‹</button>
+        <span style={{ fontSize: 13, fontWeight: 700, color: C.text1 }}>
+          {view.year}년 {view.month}월
+        </span>
+        <button style={btnStyle} onClick={() => moveMonth(1)}>›</button>
+      </div>
+
+      {/* DOW headers */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", marginBottom: 4 }}>
+        {DOW.map((d, i) => (
+          <span key={d} style={{ textAlign: "center", fontSize: 10, fontWeight: 600, color: i >= 5 ? "#CBD5E1" : C.text3, paddingBottom: 4 }}>
+            {d}
+          </span>
+        ))}
+      </div>
+
+      {/* Day cells */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "2px 0" }}>
+        {days.map((day, i) => {
+          if (!day) return <div key={`e${i}`} />;
+          const iso = toISO(day);
+          const isSelected = iso === selectedDate;
+          const isToday = iso === today;
+          const hasData = available.has(iso);
+          const dow = i % 7; // Mon=0 Sun=6
+          const isWeekend = dow >= 5;
+
+          return (
+            <button
+              key={iso}
+              type="button"
+              onClick={() => hasData && onSelect(iso)}
+              style={{
+                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                padding: "5px 0", border: "none", borderRadius: 8, cursor: hasData ? "pointer" : "default",
+                background: isSelected ? C.accent : isToday ? C.accentLight : "none",
+                outline: isToday && !isSelected ? `2px solid ${C.accent}` : "none",
+                outlineOffset: -2,
+              }}
+            >
+              <span style={{
+                fontSize: 12, fontWeight: isSelected || isToday ? 700 : 400,
+                color: isSelected ? "#fff" : isWeekend ? "#CBD5E1" : !hasData ? "#D1D5DB" : C.text1,
+              }}>
+                {day}
+              </span>
+              {hasData && (
+                <span style={{
+                  width: 4, height: 4, borderRadius: 99, marginTop: 2,
+                  background: isSelected ? "rgba(255,255,255,0.7)" : C.accent,
+                }} />
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ── Order calculator ─────────────────────────────────────────────────────────
 let _rowId = 0;
 const emptyRow = () => ({ id: ++_rowId, name: "", sandwichId: "", drinkId: "" });
@@ -330,6 +433,7 @@ export default function App() {
   const [errorByDate, setErrorByDate] = useState({});
   const [likes, setLikes] = useState({});
   const [anonymousId, setAnonymousId] = useState(null);
+  const [availableDates, setAvailableDates] = useState([]);
   const [quiznosOpen, setQuiznosOpen] = useState(false);
   const [quiznosItems, setQuiznosItems] = useState([]);
   const [quiznosDrinks, setQuiznosDrinks] = useState([]);
@@ -356,7 +460,16 @@ export default function App() {
       .finally(() => setLoadingDate(null));
   }, [dataByDate, loadingDate, API_BASE]);
 
-  useEffect(() => { fetchMenu(TODAY); }, [TODAY]);
+  useEffect(() => {
+    fetchMenu(TODAY);
+    fetch(`${API_BASE}/api/menu/dates`)
+      .then(r => r.json())
+      .then(json => {
+        if (Array.isArray(json.dates)) setAvailableDates(json.dates);
+      })
+      .catch(() => {});
+  }, [TODAY]);
+
   useEffect(() => { fetchMenu(selectedDate); }, [selectedDate]);
 
   useEffect(() => {
@@ -459,6 +572,13 @@ export default function App() {
 
       {/* Content */}
       <main style={{ maxWidth: 880, margin: "0 auto", padding: "24px 20px 32px" }}>
+        <Calendar
+          selectedDate={selectedDate}
+          availableDates={availableDates}
+          today={TODAY}
+          onSelect={setSelectedDate}
+        />
+
         {loading ? (
           <div style={{ display: "flex", justifyContent: "center", padding: "60px 0", fontSize: 13, color: C.text3 }}>메뉴 불러오는 중…</div>
         ) : error ? (
