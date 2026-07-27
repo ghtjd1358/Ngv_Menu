@@ -357,7 +357,7 @@ export default function App() {
   }, [dataByDate, loadingDate, API_BASE]);
 
   useEffect(() => { fetchMenu(TODAY); }, [TODAY]);
-  useEffect(() => { if (selectedDate === TOMORROW) fetchMenu(TOMORROW); }, [selectedDate, TOMORROW]);
+  useEffect(() => { fetchMenu(selectedDate); }, [selectedDate]);
 
   useEffect(() => {
     if (!anonymousId) return;
@@ -428,20 +428,33 @@ export default function App() {
         </div>
       </header>
 
-      {/* Date tabs */}
+      {/* Date picker */}
       <div style={{ background: C.card, borderBottom: `1px solid ${C.border}` }}>
-        <div style={{ maxWidth: 880, margin: "0 auto", padding: "0 20px", display: "flex" }}>
-          {[
-            { date: TODAY, label: "오늘" },
-            { date: TOMORROW, label: "내일" },
-          ].map(({ date, label }) => (
-            <button key={date} type="button" onClick={() => setSelectedDate(date)}
-              style={{ padding: "12px 20px", fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer", background: "none", borderBottom: selectedDate === date ? `2px solid ${C.accent}` : "2px solid transparent", color: selectedDate === date ? C.accent : C.text3, transition: "all 0.15s" }}>
-              {label} <span style={{ fontSize: 11, fontWeight: 400, marginLeft: 2 }}>
-                {label === "오늘" ? formatDateLabel(TODAY).replace("요일", "") : formatDateLabel(TOMORROW).replace("요일", "")}
-              </span>
+        <div style={{ maxWidth: 880, margin: "0 auto", padding: "10px 20px", display: "flex", alignItems: "center", gap: 8 }}>
+          <button type="button"
+            onClick={() => { const d = new Date(selectedDate); d.setDate(d.getDate() - 1); setSelectedDate(d.toISOString().slice(0, 10)); }}
+            style={{ background: "none", border: `1px solid ${C.border}`, borderRadius: 8, width: 32, height: 32, cursor: "pointer", color: C.text2, fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            ‹
+          </button>
+          <input
+            type="date"
+            value={selectedDate}
+            max={TOMORROW}
+            onChange={e => e.target.value && setSelectedDate(e.target.value)}
+            style={{ flex: 1, border: `1px solid ${C.border}`, borderRadius: 8, padding: "5px 10px", fontSize: 13, color: C.text1, background: C.bg, outline: "none", cursor: "pointer", minWidth: 0 }}
+          />
+          <button type="button"
+            onClick={() => { const d = new Date(selectedDate); d.setDate(d.getDate() + 1); const next = d.toISOString().slice(0, 10); if (next <= TOMORROW) setSelectedDate(next); }}
+            style={{ background: "none", border: `1px solid ${C.border}`, borderRadius: 8, width: 32, height: 32, cursor: "pointer", color: selectedDate >= TOMORROW ? C.border : C.text2, fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
+            disabled={selectedDate >= TOMORROW}>
+            ›
+          </button>
+          {selectedDate !== TODAY && (
+            <button type="button" onClick={() => setSelectedDate(TODAY)}
+              style={{ background: C.accentLight, color: C.accent, border: "none", borderRadius: 8, padding: "5px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}>
+              오늘
             </button>
-          ))}
+          )}
         </div>
       </div>
 
