@@ -32,19 +32,9 @@ const BROWSER_HEADERS = {
 };
 
 async function fetchSourceHtml(date = null) {
-	// 날짜 지정 시 사이트의 date 검색 폼을 POST로 제출
-	const res = date
-		? await fetch(SOURCE_URL, {
-			method: "POST",
-			headers: {
-				...BROWSER_HEADERS,
-				"Content-Type": "application/x-www-form-urlencoded",
-				"Referer": SOURCE_URL,
-				"Sec-Fetch-Site": "same-origin",
-			},
-			body: `date=${encodeURIComponent(date)}`,
-		})
-		: await fetch(SOURCE_URL, { headers: BROWSER_HEADERS });
+	// GET 폼: ?date=YYYY-MM-DD 쿼리 파라미터로 날짜 지정
+	const url = date ? `${SOURCE_URL}?date=${date}` : SOURCE_URL;
+	const res = await fetch(url, { headers: BROWSER_HEADERS });
 
 	if (!res.ok) throw new Error(`source fetch failed (HTTP ${res.status})`);
 	const html = await res.text();
@@ -280,21 +270,6 @@ export default {
 		const url = new URL(req.url);
 
 		if (req.method === "OPTIONS") return corsResponse();
-
-		// GET /api/debug/form - 사이트 폼 구조 확인용 (임시)
-		if (url.pathname === "/api/debug/form") {
-			try {
-				const html = await fetchSourceHtml();
-				const formMatch = html.match(/<form[\s\S]*?<\/form>/i);
-				const inputs = [...html.matchAll(/<input[^>]+>/gi)].map(m => m[0]).slice(0, 20);
-				return new Response(JSON.stringify({
-					form: formMatch ? formMatch[0].slice(0, 800) : "form not found",
-					inputs,
-				}, null, 2), { headers: { "content-type": "application/json" } });
-			} catch (e) {
-				return new Response(JSON.stringify({ error: e.message }), { headers: { "content-type": "application/json" } });
-			}
-		}
 
 		// GET /api/menu/today?date=YYYY-MM-DD&fresh=1
 		if (url.pathname === "/api/menu/today") {
