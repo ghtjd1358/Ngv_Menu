@@ -18,21 +18,34 @@ function addDaysISO(isoDate, days) {
 }
 
 // ── Fetch ────────────────────────────────────────────────────────────────────
-async function fetchSourceHtml() {
-	const res = await fetch(SOURCE_URL, {
-		headers: {
-			"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
-			"Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-			"Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
-			"Cache-Control": "no-cache",
-			"Pragma": "no-cache",
-			"Sec-Fetch-Dest": "document",
-			"Sec-Fetch-Mode": "navigate",
-			"Sec-Fetch-Site": "none",
-			"Sec-Fetch-User": "?1",
-			"Upgrade-Insecure-Requests": "1",
-		},
-	});
+const BROWSER_HEADERS = {
+	"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+	"Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+	"Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+	"Cache-Control": "no-cache",
+	"Pragma": "no-cache",
+	"Sec-Fetch-Dest": "document",
+	"Sec-Fetch-Mode": "navigate",
+	"Sec-Fetch-Site": "none",
+	"Sec-Fetch-User": "?1",
+	"Upgrade-Insecure-Requests": "1",
+};
+
+async function fetchSourceHtml(date = null) {
+	// 날짜 지정 시 사이트의 date 검색 폼을 POST로 제출
+	const res = date
+		? await fetch(SOURCE_URL, {
+			method: "POST",
+			headers: {
+				...BROWSER_HEADERS,
+				"Content-Type": "application/x-www-form-urlencoded",
+				"Referer": SOURCE_URL,
+				"Sec-Fetch-Site": "same-origin",
+			},
+			body: `date=${encodeURIComponent(date)}`,
+		})
+		: await fetch(SOURCE_URL, { headers: BROWSER_HEADERS });
+
 	if (!res.ok) throw new Error(`source fetch failed (HTTP ${res.status})`);
 	const html = await res.text();
 	if (html.includes("snucert.snu.ac.kr/waf")) {
@@ -167,8 +180,8 @@ function parseRestaurantRow(trHtml, restaurantId) {
 }
 
 // ── Build menu JSON ──────────────────────────────────────────────────────────
-async function buildMenuJson() {
-	const html = await fetchSourceHtml();
+async function buildMenuJson(date = null) {
+	const html = await fetchSourceHtml(date);
 	const dureRow = findRowHtmlByRestaurantName(html, "두레미담");
 	const r301Row = findRowHtmlByRestaurantName(html, "301동식당");
 
@@ -185,7 +198,7 @@ async function buildMenuJson() {
 	}
 
 	return {
-		date: todayISO_KST(),
+		date: date || todayISO_KST(),
 		sourceUrl: SOURCE_URL,
 		updatedAt: new Date().toISOString(),
 		restaurants: [dure, r301],
@@ -346,15 +359,28 @@ export default {
 
 	async scheduled(event, env, ctx) {
 		ctx.waitUntil((async () => {
+			// 오늘 메뉴
 			try {
-				const data = await buildMenuJson();
-				await Promise.all([
-					setCachedToday(env, data),
-					setMenuByDate(env, data),
-				]);
-				console.log(`Scheduled update OK: ${data.date}, dure=${data.restaurants[0]?.lunch?.length}, r301=${data.restaurants[1]?.lunch?.length}`);
+				const today = await buildMenuJson();
+				await Promise.all([setCachedToday(env, today), setMenuByDate(env, today)]);
+				console.log(`Today OK: ${today.date}, dure=${today.restaurants[0]?.lunch?.length}, r301=${today.restaurants[1]?.lunch?.length}`);
 			} catch (e) {
-				console.error("Scheduled update failed:", e?.message || e);
+				console.error("Today update failed:", e?.message || e);
+			}
+
+			// 내일 메뉴 (사이트에서 지원하면 저장)
+			try {
+				const tomorrowDate = addDaysISO(todayISO_KST(), 1);
+				const tomorrow = await buildMenuJson(tomorrowDate);
+				const hasData = tomorrow.restaurants.some(r => r.lunch?.length > 0);
+				if (hasData) {
+					await setMenuByDate(env, tomorrow);
+					console.log(`Tomorrow OK: ${tomorrow.date}`);
+				} else {
+					console.log(`Tomorrow data empty, skipping cache: ${tomorrowDate}`);
+				}
+			} catch (e) {
+				console.log(`Tomorrow fetch skipped: ${e?.message || e}`);
 			}
 		})());
 	},
