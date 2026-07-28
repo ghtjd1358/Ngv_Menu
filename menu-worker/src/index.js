@@ -4,10 +4,6 @@ const KV_KEY_TODAY = "menu:today";
 const KV_KEY_FAVORITES_PREFIX = "favorites:";
 const kvByDate = (date) => `menu:${date}`;
 
-const RES_MAP = {
-	"09": { id: "301", name: "301동식당" },
-	"07": { id: "dure", name: "두레미담" },
-};
 
 // ── Date helpers ─────────────────────────────────────────────────────────────
 function todayISO_KST() {
@@ -54,18 +50,13 @@ async function buildMenuJson(date = null) {
 				if (code && data[code]) {
 					currentRes = code;
 					currentMealType = "";
+					mealTypeBuffer = ""; // 이전 식당의 meal type 버퍼 초기화
 				}
 			}
 		})
 		.on('.meal-type', {
 			element() { mealTypeBuffer = ""; },
 			text(chunk) { mealTypeBuffer += chunk.text; },
-		})
-		.on('.meal', {
-			element() {
-				// meal-type text는 .meal 시작 후 .meal-type에서 수집됨
-				// .meal element가 닫힐 때 currentMealType을 확정
-			}
 		})
 		.on('.menu a.modal-link', {
 			element(el) {
@@ -77,16 +68,6 @@ async function buildMenuJson(date = null) {
 				const menu = el.getAttribute('data-menu');
 				if (menu && data[currentRes]) {
 					data[currentRes].lunch.push(menu.trim());
-				}
-			}
-		})
-		.on('.meal-time, .operating-time, .time', {
-			text(chunk) {
-				if (!currentRes) return;
-				const t = chunk.text.trim();
-				const m = t.match(/\d{1,2}:\d{2}\s*[~\-]\s*\d{1,2}:\d{2}/);
-				if (m && currentMealType === "점심") {
-					data[currentRes].hours = m[0].replace(/\s/g, "");
 				}
 			}
 		})
@@ -320,7 +301,9 @@ export default {
 			try {
 				const data = await buildMenuJson();
 				await Promise.all([setCachedToday(env, data), setMenuByDate(env, data)]);
-				console.log(`Cron OK: ${data.date}, 301=${data.restaurants[0]?.lunch?.length}, dure=${data.restaurants[1]?.lunch?.length}`);
+				const r301 = data.restaurants.find(r => r.id === "301");
+				const rdure = data.restaurants.find(r => r.id === "dure");
+				console.log(`Cron OK: ${data.date}, 301=${r301?.lunch?.length}, dure=${rdure?.lunch?.length}`);
 			} catch (e) {
 				console.error("Cron failed:", e?.message || e);
 			}
