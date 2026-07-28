@@ -406,19 +406,6 @@ export default function App() {
 
       {/* Content */}
       <main style={{ maxWidth: 880, margin: "0 auto", padding: "24px 20px 32px" }}>
-        {/* react-datepicker 인라인 캘린더 */}
-        <div className="calendar-wrapper" style={{ marginBottom: 20 }}>
-          <DatePicker
-            selected={selectedDateObj}
-            onChange={(date) => date && setSelectedDate(toISO(date))}
-            inline
-            locale="ko"
-            highlightDates={availableDateObjs}
-            maxDate={addDays(new Date(), 30)}
-            calendarClassName="menu-calendar"
-          />
-        </div>
-
         {/* 선택 날짜 표시 + 오늘 버튼 */}
         {selectedDate !== TODAY && (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
@@ -430,7 +417,7 @@ export default function App() {
           </div>
         )}
 
-        {/* Menu content */}
+        {/* 1. 오늘 메뉴 */}
         {loading ? (
           <div style={{ display: "flex", justifyContent: "center", padding: "40px 0", fontSize: 13, color: C.text3 }}>메뉴 불러오는 중…</div>
         ) : error ? (
@@ -467,17 +454,33 @@ export default function App() {
           </div>
         )}
 
-        {/* Bottom links */}
-        <div style={{ marginTop: 20, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+        {/* 2. 포케 / 퀴즈노스 버튼 */}
+        <div style={{ marginTop: 16, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
           <button type="button"
             onClick={() => window.open("https://m.booking.naver.com/order/bizes/1397805/items/6691932?theme=place&service-target=map-pc&refererCode=menutab&lang=ko&area=ple", "_blank", "noopener,noreferrer")}
-            style={{ background: C.card, color: C.text2, border: `1px solid ${C.border}`, borderRadius: 99, padding: "10px 0", fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
+            style={{ background: C.card, color: C.text2, border: `1px solid ${C.border}`, borderRadius: 12, padding: "12px 0", fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
             포케 올데이 메뉴
           </button>
           <button type="button" onClick={() => setQuiznosOpen(true)}
-            style={{ background: C.card, color: C.text2, border: `1px solid ${C.border}`, borderRadius: 99, padding: "10px 0", fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
+            style={{ background: C.card, color: C.text2, border: `1px solid ${C.border}`, borderRadius: 12, padding: "12px 0", fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
             퀴즈노스 주문
           </button>
+        </div>
+
+        {/* 3. 달력 */}
+        <div style={{ marginTop: 20 }}>
+          <p style={{ margin: "0 0 10px", fontSize: 11, fontWeight: 600, color: C.text3, letterSpacing: "0.05em" }}>메뉴 기록</p>
+          <div className="calendar-wrapper">
+            <DatePicker
+              selected={selectedDateObj}
+              onChange={(date) => date && setSelectedDate(toISO(date))}
+              inline
+              locale="ko"
+              highlightDates={availableDateObjs}
+              maxDate={addDays(new Date(), 30)}
+              calendarClassName="menu-calendar"
+            />
+          </div>
         </div>
       </main>
 
