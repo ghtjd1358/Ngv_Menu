@@ -271,6 +271,22 @@ export default {
 
 		if (req.method === "OPTIONS") return corsResponse();
 
+		// GET /api/debug/snumenu - 새 소스 HTML 구조 확인용 (임시)
+		if (url.pathname === "/api/debug/snumenu") {
+			const date = url.searchParams.get("date") || todayISO_KST();
+			const res = await fetch(`https://snumenu.gerosyab.net/ko/menus?date=${date}&resCode=09,07`, {
+				headers: { "User-Agent": "Mozilla/5.0", "Accept": "text/html" }
+			});
+			const html = await res.text();
+			// 식당 카드 구조 샘플만 추출
+			const cardMatch = html.match(/<div[^>]+class="[^"]*restaurant[^"]*"[\s\S]{0,3000}/i);
+			return new Response(JSON.stringify({
+				status: res.status,
+				htmlLength: html.length,
+				sample: cardMatch ? cardMatch[0].slice(0, 2000) : html.slice(0, 2000),
+			}, null, 2), { headers: { "content-type": "application/json" } });
+		}
+
 		// GET /api/menu/month?year=YYYY&month=MM - 해당 월 전체 메뉴 일괄 반환
 		if (url.pathname === "/api/menu/month") {
 			const year = url.searchParams.get("year");
