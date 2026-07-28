@@ -300,6 +300,10 @@ export default function App() {
   const [loadingDate, setLoadingDate] = useState(null);
   const [errorByDate, setErrorByDate] = useState({});
   const [availableDates, setAvailableDates] = useState([]);
+  const [viewMonth, setViewMonth] = useState(() => {
+    const d = new Date();
+    return { year: d.getFullYear(), month: d.getMonth() + 1 };
+  });
   const [likes, setLikes] = useState({});
   const [anonymousId, setAnonymousId] = useState(null);
   const [quiznosOpen, setQuiznosOpen] = useState(false);
@@ -328,13 +332,31 @@ export default function App() {
       .finally(() => setLoadingDate(null));
   }, [dataByDate, loadingDate, API_BASE]);
 
+  const fetchMonthData = useCallback((year, month) => {
+    fetch(`${API_BASE}/api/menu/month?year=${year}&month=${month}`)
+      .then(r => r.json())
+      .then(json => {
+        if (typeof json === "object" && !json.error) {
+          setDataByDate(prev => ({ ...prev, ...json }));
+        }
+      })
+      .catch(() => {});
+  }, [API_BASE]);
+
   useEffect(() => {
     fetchMenu(TODAY);
     fetch(`${API_BASE}/api/menu/dates`)
       .then(r => r.json())
       .then(json => { if (Array.isArray(json.dates)) setAvailableDates(json.dates); })
       .catch(() => {});
+    fetchMonthData(viewMonth.year, viewMonth.month);
   }, [TODAY]);
+
+  const handleMonthChange = useCallback((date) => {
+    const y = date.getFullYear(), m = date.getMonth() + 1;
+    setViewMonth({ year: y, month: m });
+    fetchMonthData(y, m);
+  }, [fetchMonthData]);
 
   useEffect(() => { fetchMenu(selectedDate); }, [selectedDate]);
 
@@ -378,6 +400,26 @@ export default function App() {
       setLikes(prev => ({ ...prev, [menuId]: wasLiked }));
     }
   }, [anonymousId, likes]);
+
+  const renderDayContents = useCallback((dayOfMonth, date) => {
+    const iso = toISO(date);
+    const menu = dataByDate[iso];
+    const items = menu?.restaurants?.flatMap(r =>
+      (r.lunch || [])
+        .filter(l => l.length > 1 && !l.startsWith("<"))
+        .slice(0, 2)
+        .map(l => l.replace(/\s*[：:]\s*[\d,]+원\s*$/, "").trim())
+    ).slice(0, 4) || [];
+
+    return (
+      <div className="day-cell-inner">
+        <span className="day-num">{dayOfMonth}</span>
+        {items.map((item, i) => (
+          <div key={i} className="day-menu-text">{item}</div>
+        ))}
+      </div>
+    );
+  }, [dataByDate]);
 
   // react-datepicker용 Date 객체
   const selectedDateObj = useMemo(() => toDate(selectedDate), [selectedDate]);
@@ -474,6 +516,8 @@ export default function App() {
             <DatePicker
               selected={selectedDateObj}
               onChange={(date) => date && setSelectedDate(toISO(date))}
+              onMonthChange={handleMonthChange}
+              renderDayContents={renderDayContents}
               inline
               locale="ko"
               highlightDates={availableDateObjs}
