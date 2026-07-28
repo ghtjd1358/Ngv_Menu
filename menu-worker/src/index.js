@@ -328,16 +328,17 @@ export default {
 			const fresh = url.searchParams.get("fresh") === "1";
 			const isFuture = targetDate > today;
 
-			// Future date: only return if we have cached data (from advance publish)
+			// 미래 날짜: updatedAt이 실제로 해당 날짜(KST)에 저장된 데이터만 반환
 			if (isFuture) {
 				const cached = await getMenuByDate(env, targetDate);
-				if (cached) return jsonResponse(cached);
+				if (cached?.updatedAt) {
+					const kstDate = new Date(new Date(cached.updatedAt).getTime() + 9 * 60 * 60 * 1000)
+						.toISOString().slice(0, 10);
+					if (kstDate === targetDate) return jsonResponse(cached);
+				}
 				return jsonResponse({
-					date: targetDate,
-					sourceUrl: SOURCE_URL,
-					updatedAt: null,
-					restaurants: [],
-					note: "내일 메뉴는 아직 업데이트되지 않았습니다.",
+					date: targetDate, sourceUrl: SOURCE_URL, updatedAt: null,
+					restaurants: [], note: "내일 메뉴는 아직 업데이트되지 않았습니다.",
 				});
 			}
 
