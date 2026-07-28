@@ -271,6 +271,29 @@ export default {
 
 		if (req.method === "OPTIONS") return corsResponse();
 
+		// GET /api/menu/month?year=YYYY&month=MM - 해당 월 전체 메뉴 일괄 반환
+		if (url.pathname === "/api/menu/month") {
+			const year = url.searchParams.get("year");
+			const month = url.searchParams.get("month")?.padStart(2, "0");
+			if (!year || !month) return jsonResponse({ error: "year and month required" }, 400);
+			try {
+				const prefix = `menu:${year}-${month}-`;
+				const list = await env.MENU_KV.list({ prefix });
+				const results = {};
+				await Promise.all(list.keys.map(async key => {
+					const raw = await env.MENU_KV.get(key.name);
+					if (!raw) return;
+					try {
+						const data = JSON.parse(raw);
+						if (data?.date) results[data.date] = data;
+					} catch {}
+				}));
+				return jsonResponse(results);
+			} catch (e) {
+				return jsonResponse({ error: e?.message || "month fetch failed" }, 500);
+			}
+		}
+
 		// GET /api/menu/dates - KV에 캐시된 날짜 목록
 		if (url.pathname === "/api/menu/dates") {
 			try {
@@ -328,12 +351,13 @@ export default {
 				});
 			}
 
-			// 오늘: 캐시 우선, 없으면 소스 fetch
+			// 오늘: 날짜가 일치하는 캐시만 사용
 			if (!fresh) {
 				const byDate = await getMenuByDate(env, today);
 				if (byDate) return jsonResponse(byDate);
 				const cached = await getCachedToday(env);
-				if (cached) return jsonResponse(cached);
+				// 날짜가 바뀌었는데 이전 캐시 반환하는 버그 방지
+				if (cached && cached.date === today) return jsonResponse(cached);
 			}
 
 			try {
@@ -391,20 +415,8 @@ export default {
 				console.error("Today update failed:", e?.message || e);
 			}
 
-			// 내일 메뉴 (사이트에서 지원하면 저장)
-			try {
-				const tomorrowDate = addDaysISO(todayISO_KST(), 1);
-				const tomorrow = await buildMenuJson(tomorrowDate);
-				const hasData = tomorrow.restaurants.some(r => r.lunch?.length > 0);
-				if (hasData) {
-					await setMenuByDate(env, tomorrow);
-					console.log(`Tomorrow OK: ${tomorrow.date}`);
-				} else {
-					console.log(`Tomorrow data empty, skipping cache: ${tomorrowDate}`);
-				}
-			} catch (e) {
-				console.log(`Tomorrow fetch skipped: ${e?.message || e}`);
-			}
+			// 내일 메뉴는 SNU 사이트가 ?date= 파라미터를 지원하지 않아 불가
+			// 내일 메뉴는 내일 크론이 실행될 때 자동 캐시됨
 		})());
 	},
 };
