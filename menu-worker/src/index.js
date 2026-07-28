@@ -1,7 +1,13 @@
-const SOURCE_URL = "https://snuco.snu.ac.kr/foodmenu/";
+const SOURCE_URL = "https://snumenu.gerosyab.net/ko/menus";
+const RES_CODES = "09,07";
 const KV_KEY_TODAY = "menu:today";
 const KV_KEY_FAVORITES_PREFIX = "favorites:";
 const kvByDate = (date) => `menu:${date}`;
+
+const RES_MAP = {
+	"09": { id: "301", name: "301동식당" },
+	"07": { id: "dure", name: "두레미담" },
+};
 
 // ── Date helpers ─────────────────────────────────────────────────────────────
 function todayISO_KST() {
@@ -17,181 +23,88 @@ function addDaysISO(isoDate, days) {
 	return dt.toISOString().slice(0, 10);
 }
 
-// ── Fetch ────────────────────────────────────────────────────────────────────
-const BROWSER_HEADERS = {
-	"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
-	"Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-	"Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
-	"Cache-Control": "no-cache",
-	"Pragma": "no-cache",
-	"Sec-Fetch-Dest": "document",
-	"Sec-Fetch-Mode": "navigate",
-	"Sec-Fetch-Site": "none",
-	"Sec-Fetch-User": "?1",
-	"Upgrade-Insecure-Requests": "1",
-};
-
-async function fetchSourceHtml(date = null) {
-	// GET 폼: ?date=YYYY-MM-DD 쿼리 파라미터로 날짜 지정
-	const url = date ? `${SOURCE_URL}?date=${date}` : SOURCE_URL;
-	const res = await fetch(url, { headers: BROWSER_HEADERS });
-
-	if (!res.ok) throw new Error(`source fetch failed (HTTP ${res.status})`);
-	const html = await res.text();
-	if (html.includes("snucert.snu.ac.kr/waf")) {
-		throw new Error("WAF blocked: SNU firewall rejected the request");
-	}
-	if (html.length < 1000) {
-		throw new Error(`source returned suspiciously small response (${html.length} bytes)`);
-	}
-	return html;
-}
-
-// ── HTML helpers ─────────────────────────────────────────────────────────────
-function decodeHtml(s) {
-	return s
-		.replace(/&nbsp;/g, " ")
-		.replace(/&amp;/g, "&")
-		.replace(/&lt;/g, "<")
-		.replace(/&gt;/g, ">")
-		.replace(/&#39;/g, "'")
-		.replace(/&quot;/g, '"');
-}
-
-function stripTags(s) {
-	return s.replace(/<\/?[a-z][^>]*>/gi, " ");
-}
-
-function extractTd(trHtml, className) {
-	const re = new RegExp(
-		`<td\\s+class=["']${className}["'][^>]*>([\\s\\S]*?)<\\/td>`,
-		"i"
-	);
-	const m = trHtml.match(re);
-	return m ? m[1] : "";
-}
-
-function extractTitleName(titleTdHtml) {
-	return decodeHtml(stripTags(titleTdHtml))
-		.replace(/\s+/g, " ")
-		.trim()
-		.replace(/\(\d{2,4}-\d{3,4}\)\s*$/, "")
-		.trim();
-}
-
-function brToLines(tdInnerHtml) {
-	return decodeHtml(tdInnerHtml)
-		.replace(/<br\s*\/?>/gi, "\n")
-		.replace(/\r/g, "")
-		.split("\n")
-		.map((l) => stripTags(l).replace(/\s+/g, " ").trim())
-		.filter(Boolean);
-}
-
-function findRowHtmlByRestaurantName(pageHtml, restaurantName) {
-	const rows = pageHtml.match(/<tr[\s\S]*?<\/tr>/gi) || [];
-	return rows.find(
-		(r) => r.includes(restaurantName) && /class=["']title["']/.test(r)
-	) || "";
-}
-
-function extractHoursFromLines(lines) {
-	const hit = lines.find((l) => l.includes("운영시간"));
-	if (!hit) return "";
-	const cleaned = hit.replace(/^.*운영시간\s*[:：]?\s*/g, "").replace(/^[:\s]+/g, "").trim();
-	const m = cleaned.match(/\d{1,2}:\d{2}\s*~\s*\d{1,2}:\d{2}/);
-	return m ? m[0].replace(/\s+/g, "") : cleaned;
-}
-
-function isNoticeLine(l) {
-	return l.startsWith("※") || l.includes("혼잡시간") || l.includes("라스트") ||
-		l.includes("요일별") || l.includes("수령") || l.includes("준비수량");
-}
-
-function normalizeMenuLines(lines) {
-	return lines.map((l) => l.replace(/\s+/g, " ").trim()).filter(Boolean);
-}
-
-function isHeaderLine(l) {
-	return /^<[^>]+>/.test(l);
-}
-
-function takeSection(lines, startHeader, stopHeaders) {
-	const startIdx = lines.findIndex((l) => l.includes(startHeader));
-	if (startIdx < 0) return [];
-	const out = [];
-	for (let i = startIdx; i < lines.length; i++) {
-		const l = lines[i];
-		if (i > startIdx && stopHeaders.some((h) => l.includes(h))) break;
-		out.push(l);
-	}
-	return out;
-}
-
-// ── Restaurant parsers ───────────────────────────────────────────────────────
-function parseDureLunch(tdLunchHtml) {
-	const lines = normalizeMenuLines(brToLines(tdLunchHtml));
-	const hours = extractHoursFromLines(lines);
-	const section = takeSection(lines, "<셀프코너>", ["<주문식 메뉴>"]);
-	const lunch = section.filter(l => !l.includes("운영시간") && !isNoticeLine(l));
-	return { hours, lunch };
-}
-
-function parse301Lunch(tdLunchHtml) {
-	const lines = normalizeMenuLines(brToLines(tdLunchHtml));
-	const mealSection = takeSection(lines, "<식사>", ["TAKE-OUT", "301동1층"]);
-	const hours = extractHoursFromLines(mealSection);
-	const lunch = [];
-	for (const l of mealSection) {
-		if (l.includes("운영시간")) continue;
-		if (isNoticeLine(l)) continue;
-		if (l.includes("교직원전용식당")) break;
-		if (l.length < 2) continue;
-		lunch.push(l);
-	}
-	return { hours, lunch };
-}
-
-function parseRestaurantRow(trHtml, restaurantId) {
-	const titleTd = extractTd(trHtml, "title");
-	const lunchTd = extractTd(trHtml, "lunch");
-	const name = extractTitleName(titleTd);
-	if (!lunchTd) return { id: restaurantId, name, hours: "", lunch: [] };
-	if (restaurantId === "dure") {
-		const { hours, lunch } = parseDureLunch(lunchTd);
-		return { id: restaurantId, name, hours, lunch };
-	}
-	if (restaurantId === "301") {
-		const { hours, lunch } = parse301Lunch(lunchTd);
-		return { id: restaurantId, name, hours, lunch };
-	}
-	const lines = normalizeMenuLines(brToLines(lunchTd));
-	return { id: restaurantId, name, hours: extractHoursFromLines(lines), lunch: lines };
-}
-
-// ── Build menu JSON ──────────────────────────────────────────────────────────
+// ── Menu fetch via HTMLRewriter ───────────────────────────────────────────────
 async function buildMenuJson(date = null) {
-	const html = await fetchSourceHtml(date);
-	const dureRow = findRowHtmlByRestaurantName(html, "두레미담");
-	const r301Row = findRowHtmlByRestaurantName(html, "301동식당");
+	const targetDate = date || todayISO_KST();
+	const url = `${SOURCE_URL}?date=${targetDate}&resCode=${RES_CODES}`;
 
-	const dure = dureRow
-		? parseRestaurantRow(dureRow, "dure")
-		: { id: "dure", name: "두레미담", hours: "", lunch: [] };
-	const r301 = r301Row
-		? parseRestaurantRow(r301Row, "301")
-		: { id: "301", name: "301동식당", hours: "", lunch: [] };
+	const fetchRes = await fetch(url, {
+		headers: {
+			"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+			"Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			"Accept-Language": "ko-KR,ko;q=0.9",
+		}
+	});
 
-	// Validate: at least one restaurant has menu data
-	if (dure.lunch.length === 0 && r301.lunch.length === 0) {
-		console.warn("Warning: both restaurants returned empty lunch data");
+	if (!fetchRes.ok) throw new Error(`snumenu fetch failed: ${fetchRes.status}`);
+
+	const data = {
+		"09": { id: "301", name: "301동식당", hours: "", lunch: [] },
+		"07": { id: "dure", name: "두레미담", hours: "", lunch: [] },
+	};
+
+	let currentRes = null;
+	let currentMealType = "";
+	let mealTypeBuffer = "";
+
+	const transformed = new HTMLRewriter()
+		.on('.restaurant', {
+			element(el) {
+				const code = el.getAttribute('data-resCode');
+				if (code && data[code]) {
+					currentRes = code;
+					currentMealType = "";
+				}
+			}
+		})
+		.on('.meal-type', {
+			element() { mealTypeBuffer = ""; },
+			text(chunk) { mealTypeBuffer += chunk.text; },
+		})
+		.on('.meal', {
+			element() {
+				// meal-type text는 .meal 시작 후 .meal-type에서 수집됨
+				// .meal element가 닫힐 때 currentMealType을 확정
+			}
+		})
+		.on('.menu a.modal-link', {
+			element(el) {
+				// .meal-type 텍스트가 쌓인 것을 여기서 확인
+				const mt = mealTypeBuffer.trim();
+				if (mt) currentMealType = mt;
+
+				if (currentMealType !== "점심" || !currentRes) return;
+				const menu = el.getAttribute('data-menu');
+				if (menu && data[currentRes]) {
+					data[currentRes].lunch.push(menu.trim());
+				}
+			}
+		})
+		.on('.meal-time, .operating-time, .time', {
+			text(chunk) {
+				if (!currentRes) return;
+				const t = chunk.text.trim();
+				const m = t.match(/\d{1,2}:\d{2}\s*[~\-]\s*\d{1,2}:\d{2}/);
+				if (m && currentMealType === "점심") {
+					data[currentRes].hours = m[0].replace(/\s/g, "");
+				}
+			}
+		})
+		.transform(fetchRes);
+
+	await transformed.text();
+
+	const restaurants = Object.values(data);
+
+	if (restaurants.every(r => r.lunch.length === 0)) {
+		console.warn(`No lunch data for ${targetDate} from snumenu`);
 	}
 
 	return {
-		date: date || todayISO_KST(),
-		sourceUrl: SOURCE_URL,
+		date: targetDate,
+		sourceUrl: url,
 		updatedAt: new Date().toISOString(),
-		restaurants: [dure, r301],
+		restaurants,
 	};
 }
 
@@ -271,23 +184,7 @@ export default {
 
 		if (req.method === "OPTIONS") return corsResponse();
 
-		// GET /api/debug/snumenu - 새 소스 HTML 구조 확인용 (임시)
-		if (url.pathname === "/api/debug/snumenu") {
-			const date = url.searchParams.get("date") || todayISO_KST();
-			const res = await fetch(`https://snumenu.gerosyab.net/ko/menus?date=${date}&resCode=09,07`, {
-				headers: { "User-Agent": "Mozilla/5.0", "Accept": "text/html" }
-			});
-			const html = await res.text();
-			// 식당 카드 구조 샘플만 추출
-			const cardMatch = html.match(/<div[^>]+class="[^"]*restaurant[^"]*"[\s\S]{0,3000}/i);
-			return new Response(JSON.stringify({
-				status: res.status,
-				htmlLength: html.length,
-				sample: cardMatch ? cardMatch[0].slice(0, 2000) : html.slice(0, 2000),
-			}, null, 2), { headers: { "content-type": "application/json" } });
-		}
-
-		// GET /api/menu/month?year=YYYY&month=MM - 해당 월 전체 메뉴 일괄 반환
+		// GET /api/menu/month?year=YYYY&month=MM
 		if (url.pathname === "/api/menu/month") {
 			const year = url.searchParams.get("year");
 			const month = url.searchParams.get("month")?.padStart(2, "0");
@@ -310,7 +207,7 @@ export default {
 			}
 		}
 
-		// GET /api/menu/dates - KV에 캐시된 날짜 목록
+		// GET /api/menu/dates
 		if (url.pathname === "/api/menu/dates") {
 			try {
 				const list = await env.MENU_KV.list({ prefix: "menu:" });
@@ -321,18 +218,6 @@ export default {
 				return jsonResponse({ dates });
 			} catch (e) {
 				return jsonResponse({ error: e?.message || "list failed" }, 500);
-			}
-		}
-
-		// GET /api/debug/form
-		if (url.pathname === "/api/debug/form") {
-			try {
-				const html = await fetchSourceHtml();
-				const idx = html.indexOf('class="datetime"');
-				const context = html.slice(Math.max(0, idx - 600), idx + 200);
-				return new Response(JSON.stringify({ context }, null, 2), { headers: { "content-type": "application/json" } });
-			} catch (e) {
-				return new Response(JSON.stringify({ error: e.message }), { headers: { "content-type": "application/json" } });
 			}
 		}
 
@@ -352,13 +237,23 @@ export default {
 						.toISOString().slice(0, 10);
 					if (kstDate === targetDate) return jsonResponse(cached);
 				}
+				// snumenu는 미래 날짜도 지원 — 직접 fetch 시도
+				try {
+					const data = await buildMenuJson(targetDate);
+					if (data.restaurants.some(r => r.lunch.length > 0)) {
+						ctx.waitUntil(setMenuByDate(env, data));
+						return jsonResponse(data);
+					}
+				} catch (e) {
+					console.warn("Future date fetch failed:", e?.message);
+				}
 				return jsonResponse({
 					date: targetDate, sourceUrl: SOURCE_URL, updatedAt: null,
-					restaurants: [], note: "내일 메뉴는 아직 업데이트되지 않았습니다.",
+					restaurants: [], note: "해당 날짜의 메뉴가 아직 없습니다.",
 				});
 			}
 
-			// 과거 날짜: KV에 없으면 데이터 없음 반환 (소스는 오늘 메뉴만 제공)
+			// 과거 날짜: KV에 없으면 데이터 없음
 			if (targetDate < today) {
 				const byDate = await getMenuByDate(env, targetDate);
 				if (byDate) return jsonResponse(byDate);
@@ -373,7 +268,6 @@ export default {
 				const byDate = await getMenuByDate(env, today);
 				if (byDate) return jsonResponse(byDate);
 				const cached = await getCachedToday(env);
-				// 날짜가 바뀌었는데 이전 캐시 반환하는 버그 방지
 				if (cached && cached.date === today) return jsonResponse(cached);
 			}
 
@@ -423,17 +317,13 @@ export default {
 
 	async scheduled(event, env, ctx) {
 		ctx.waitUntil((async () => {
-			// 오늘 메뉴
 			try {
-				const today = await buildMenuJson();
-				await Promise.all([setCachedToday(env, today), setMenuByDate(env, today)]);
-				console.log(`Today OK: ${today.date}, dure=${today.restaurants[0]?.lunch?.length}, r301=${today.restaurants[1]?.lunch?.length}`);
+				const data = await buildMenuJson();
+				await Promise.all([setCachedToday(env, data), setMenuByDate(env, data)]);
+				console.log(`Cron OK: ${data.date}, 301=${data.restaurants[0]?.lunch?.length}, dure=${data.restaurants[1]?.lunch?.length}`);
 			} catch (e) {
-				console.error("Today update failed:", e?.message || e);
+				console.error("Cron failed:", e?.message || e);
 			}
-
-			// 내일 메뉴는 SNU 사이트가 ?date= 파라미터를 지원하지 않아 불가
-			// 내일 메뉴는 내일 크론이 실행될 때 자동 캐시됨
 		})());
 	},
 };
