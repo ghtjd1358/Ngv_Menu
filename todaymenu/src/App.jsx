@@ -347,9 +347,17 @@ export default function App() {
     fetchMenu(TODAY);
     fetch(`${API_BASE}/api/menu/dates`)
       .then(r => r.json())
-      .then(json => { if (Array.isArray(json.dates)) setAvailableDates(json.dates); })
+      .then(json => {
+        if (!Array.isArray(json.dates)) return;
+        setAvailableDates(json.dates);
+        // 캐시된 모든 월의 데이터 한 번에 로드
+        const months = [...new Set(json.dates.map(d => d.slice(0, 7)))];
+        months.forEach(ym => {
+          const [y, m] = ym.split("-");
+          fetchMonthData(parseInt(y), parseInt(m));
+        });
+      })
       .catch(() => {});
-    fetchMonthData(viewMonth.year, viewMonth.month);
   }, [TODAY]);
 
   const handleMonthChange = useCallback((date) => {
@@ -521,6 +529,7 @@ export default function App() {
               inline
               locale="ko"
               highlightDates={availableDateObjs}
+              minDate={availableDates.length > 0 ? toDate(availableDates[0]) : undefined}
               maxDate={addDays(new Date(), 30)}
               calendarClassName="menu-calendar"
             />
