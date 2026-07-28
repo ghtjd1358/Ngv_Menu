@@ -1,12 +1,99 @@
-/* reset */
 #root { max-width: none; margin: 0; padding: 0; text-align: left; }
 
-/* status pulse */
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
 }
 .pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-
-/* Quiznos modal ring */
 .qz-item { box-shadow: inset 0 0 0 1px #DEE3EF; }
+
+/* ── react-datepicker 커스텀 스타일 ── */
+.calendar-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.menu-calendar {
+  border: 1px solid #DEE3EF !important;
+  border-radius: 16px !important;
+  box-shadow: none !important;
+  font-family: 'Pretendard', 'Noto Sans KR', sans-serif !important;
+  width: 100% !important;
+  max-width: 360px;
+}
+
+.menu-calendar .react-datepicker__month-container {
+  width: 100%;
+}
+
+.menu-calendar .react-datepicker__header {
+  background: #1E2433 !important;
+  border-bottom: none !important;
+  border-radius: 15px 15px 0 0 !important;
+  padding: 14px 0 10px !important;
+}
+
+.menu-calendar .react-datepicker__current-month {
+  color: #fff !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+}
+
+.menu-calendar .react-datepicker__navigation-icon::before {
+  border-color: rgba(255,255,255,0.7) !important;
+}
+
+.menu-calendar .react-datepicker__day-name {
+  color: rgba(255,255,255,0.6) !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  width: 2.2rem !important;
+}
+
+.menu-calendar .react-datepicker__day {
+  border-radius: 8px !important;
+  font-size: 13px !important;
+  color: #D1D5DB !important;
+  width: 2.2rem !important;
+  line-height: 2.2rem !important;
+}
+
+/* 데이터 있는 날짜 (highlightDates) */
+.menu-calendar .react-datepicker__day--highlighted {
+  background: #EEF1FD !important;
+  color: #1E2433 !important;
+  font-weight: 600 !important;
+}
+
+/* 선택된 날짜 */
+.menu-calendar .react-datepicker__day--selected {
+  background: #4361EE !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+}
+
+/* 오늘 */
+.menu-calendar .react-datepicker__day--today {
+  border: 2px solid #4361EE !important;
+  color: #4361EE !important;
+  font-weight: 700 !important;
+  line-height: calc(2.2rem - 4px) !important;
+}
+
+.menu-calendar .react-datepicker__day--today.react-datepicker__day--selected {
+  color: #fff !important;
+}
+
+.menu-calendar .react-datepicker__day:hover {
+  background: #F4F6FB !important;
+  color: #1E2433 !important;
+}
+
+.menu-calendar .react-datepicker__day--outside-month {
+  color: transparent !important;
+  pointer-events: none !important;
+}
+
+.menu-calendar .react-datepicker__month {
+  margin: 8px !important;
+}
