@@ -86,14 +86,13 @@ export default function MenuCalendar({ selectedDate, dataByDate, onDateSelect, o
               const isRed = di === 0 || !!holiday;
               const isSat = di === 6;
 
-              // 해당 날짜 메뉴 아이템 (식당별 최대 2개, 총 6개)
+              // 달력 셀: 301동식당 메뉴만 표시
               const menuData = dataByDate[iso];
-              const menuItems = menuData?.restaurants?.flatMap(r =>
-                (r.lunch || [])
-                  .filter(l => l.length > 1 && !l.startsWith("<"))
-                  .slice(0, 3)
-                  .map(cleanItem)
-              ).slice(0, 6) || [];
+              const r301 = menuData?.restaurants?.find(r => r.id === "301");
+              const menuItems = (r301?.lunch || [])
+                .filter(l => l.length > 1 && !l.startsWith("<"))
+                .slice(0, 6)
+                .map(cleanItem);
 
               const numColor = isSelected ? "#fff"
                 : isRed ? "#F87171"

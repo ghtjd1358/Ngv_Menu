@@ -347,10 +347,6 @@ export default function App() {
   const [loadingDate, setLoadingDate] = useState(null);
   const [errorByDate, setErrorByDate] = useState({});
   const [availableDates, setAvailableDates] = useState([]);
-  const [viewMonth, setViewMonth] = useState(() => {
-    const d = new Date();
-    return { year: d.getFullYear(), month: d.getMonth() + 1 };
-  });
   const [likes, setLikes] = useState({});
   const [anonymousId, setAnonymousId] = useState(null);
   const [quiznosOpen, setQuiznosOpen] = useState(false);
@@ -419,9 +415,7 @@ export default function App() {
   }, [TODAY]);
 
   const handleMonthChange = useCallback((date) => {
-    const y = date.getFullYear(), m = date.getMonth() + 1;
-    setViewMonth({ year: y, month: m });
-    fetchMonthData(y, m);
+    fetchMonthData(date.getFullYear(), date.getMonth() + 1);
   }, [fetchMonthData]);
 
   useEffect(() => { fetchMenu(selectedDate); }, [selectedDate]);
@@ -479,7 +473,7 @@ export default function App() {
     <div style={{ minHeight: "100dvh", background: C.bg, fontFamily: "'Pretendard', 'Noto Sans KR', -apple-system, sans-serif" }}>
       {/* Header */}
       <header style={{ background: C.header, position: "sticky", top: 0, zIndex: 20 }}>
-        <div style={{ maxWidth: 880, margin: "0 auto", padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ width: 22, height: 22, background: C.accent, borderRadius: 6, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "#fff" }}>식</span>
             <span style={{ fontSize: 14, fontWeight: 700, color: "#FFFFFF" }}>엔지미식회</span>
@@ -489,77 +483,82 @@ export default function App() {
       </header>
 
       {/* Content */}
-      <main style={{ maxWidth: 880, margin: "0 auto", padding: "24px 20px 32px" }}>
-        {/* 선택 날짜 표시 + 오늘 버튼 */}
-        {selectedDate !== TODAY && (
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: C.text2 }}>{formatLabel(selectedDate)}</span>
-            <button type="button" onClick={() => setSelectedDate(TODAY)}
-              style={{ background: C.accentLight, color: C.accent, border: "none", borderRadius: 8, padding: "5px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
-              오늘로
-            </button>
-          </div>
-        )}
-
-        {/* 1. 오늘 메뉴 */}
-        {loading ? (
-          <div style={{ display: "flex", justifyContent: "center", padding: "40px 0", fontSize: 13, color: C.text3 }}>메뉴 불러오는 중…</div>
-        ) : error ? (
-          <div style={{ background: C.redLight, borderRadius: 16, padding: 20 }}>
-            <p style={{ margin: 0, fontSize: 13, color: C.red }}>{error}</p>
-            <button type="button" onClick={() => { setErrorByDate(p => ({ ...p, [selectedDate]: null })); fetchMenu(selectedDate); }}
-              style={{ marginTop: 12, background: C.red, color: "#fff", border: "none", borderRadius: 99, padding: "6px 16px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
-              다시 시도
-            </button>
-          </div>
-        ) : noMenuData ? (
-          <div style={{ background: C.card, borderRadius: 16, padding: 32, textAlign: "center", boxShadow: `0 0 0 1px ${C.border}` }}>
-            <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: C.text2 }}>
-              {selectedDate < TODAY ? "해당 날짜의 메뉴 데이터가 없습니다"
-                : selectedDate === TODAY ? "오늘 메뉴를 불러오지 못했습니다"
-                : "아직 업데이트되지 않았습니다"}
-            </p>
-            <p style={{ margin: "8px 0 0", fontSize: 12, color: C.text3 }}>
-              {selectedDate < TODAY ? "서비스 시작 이전이거나 기록이 없습니다"
-                : selectedDate === TODAY ? "잠시 후 다시 시도해주세요"
-                : "내일 메뉴는 당일 오전 중 업데이트됩니다"}
-            </p>
+      <main style={{ maxWidth: 1200, margin: "0 auto", padding: "24px 20px 32px" }}>
+        <div className="app-layout">
+          {/* ── 왼쪽: 오늘 메뉴 + 버튼 ── */}
+          <div className="left-panel">
+            {/* 선택 날짜 표시 + 오늘 버튼 */}
             {selectedDate !== TODAY && (
-              <button type="button" onClick={() => setSelectedDate(TODAY)}
-                style={{ marginTop: 16, background: C.accentLight, color: C.accent, border: "none", borderRadius: 8, padding: "7px 16px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
-                오늘 메뉴 보기
-              </button>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: C.text2 }}>{formatLabel(selectedDate)}</span>
+                <button type="button" onClick={() => setSelectedDate(TODAY)}
+                  style={{ background: C.accentLight, color: C.accent, border: "none", borderRadius: 8, padding: "5px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+                  오늘로
+                </button>
+              </div>
             )}
-          </div>
-        ) : (
-          <div style={{ display: "grid", gap: 16, gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))" }}>
-            {r301 && <RestaurantCard restaurant={r301} liked={!!likes["301"]} onToggle={() => handleToggle("301")} />}
-            {dure && <RestaurantCard restaurant={dure} liked={!!likes["dure"]} onToggle={() => handleToggle("dure")} />}
-          </div>
-        )}
 
-        {/* 2. 포케 / 퀴즈노스 버튼 */}
-        <div style={{ marginTop: 16, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-          <button type="button"
-            onClick={() => window.open("https://m.booking.naver.com/order/bizes/1397805/items/6691932?theme=place&service-target=map-pc&refererCode=menutab&lang=ko&area=ple", "_blank", "noopener,noreferrer")}
-            style={{ background: C.card, color: C.text2, border: `1px solid ${C.border}`, borderRadius: 12, padding: "12px 0", fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
-            포케 올데이 메뉴
-          </button>
-          <button type="button" onClick={() => setQuiznosOpen(true)}
-            style={{ background: C.card, color: C.text2, border: `1px solid ${C.border}`, borderRadius: 12, padding: "12px 0", fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
-            퀴즈노스 주문
-          </button>
-        </div>
+            {/* 메뉴 */}
+            {loading ? (
+              <div style={{ display: "flex", justifyContent: "center", padding: "40px 0", fontSize: 13, color: C.text3 }}>메뉴 불러오는 중…</div>
+            ) : error ? (
+              <div style={{ background: C.redLight, borderRadius: 16, padding: 20 }}>
+                <p style={{ margin: 0, fontSize: 13, color: C.red }}>{error}</p>
+                <button type="button" onClick={() => { setErrorByDate(p => ({ ...p, [selectedDate]: null })); fetchMenu(selectedDate); }}
+                  style={{ marginTop: 12, background: C.red, color: "#fff", border: "none", borderRadius: 99, padding: "6px 16px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+                  다시 시도
+                </button>
+              </div>
+            ) : noMenuData ? (
+              <div style={{ background: C.card, borderRadius: 16, padding: 32, textAlign: "center", boxShadow: `0 0 0 1px ${C.border}` }}>
+                <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: C.text2 }}>
+                  {selectedDate < TODAY ? "해당 날짜의 메뉴 데이터가 없습니다"
+                    : selectedDate === TODAY ? "오늘 메뉴를 불러오지 못했습니다"
+                    : "아직 업데이트되지 않았습니다"}
+                </p>
+                <p style={{ margin: "8px 0 0", fontSize: 12, color: C.text3 }}>
+                  {selectedDate < TODAY ? "서비스 시작 이전이거나 기록이 없습니다"
+                    : selectedDate === TODAY ? "잠시 후 다시 시도해주세요"
+                    : "내일 메뉴는 당일 오전 중 업데이트됩니다"}
+                </p>
+                {selectedDate !== TODAY && (
+                  <button type="button" onClick={() => setSelectedDate(TODAY)}
+                    style={{ marginTop: 16, background: C.accentLight, color: C.accent, border: "none", borderRadius: 8, padding: "7px 16px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+                    오늘 메뉴 보기
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                {r301 && <RestaurantCard restaurant={r301} liked={!!likes["301"]} onToggle={() => handleToggle("301")} />}
+                {dure && <RestaurantCard restaurant={dure} liked={!!likes["dure"]} onToggle={() => handleToggle("dure")} />}
+              </div>
+            )}
 
-        {/* 3. 달력 */}
-        <div style={{ marginTop: 20 }}>
-          <p style={{ margin: "0 0 10px", fontSize: 11, fontWeight: 600, color: C.text3, letterSpacing: "0.05em" }}>메뉴 기록</p>
-          <MenuCalendar
-            selectedDate={selectedDate}
-            dataByDate={dataByDate}
-            onDateSelect={setSelectedDate}
-            onMonthChange={handleMonthChange}
-          />
+            {/* 포케 / 퀴즈노스 버튼 */}
+            <div style={{ marginTop: 16, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              <button type="button"
+                onClick={() => window.open("https://m.booking.naver.com/order/bizes/1397805/items/6691932?theme=place&service-target=map-pc&refererCode=menutab&lang=ko&area=ple", "_blank", "noopener,noreferrer")}
+                style={{ background: C.card, color: C.text2, border: `1px solid ${C.border}`, borderRadius: 12, padding: "12px 0", fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
+                포케 올데이 메뉴
+              </button>
+              <button type="button" onClick={() => setQuiznosOpen(true)}
+                style={{ background: C.card, color: C.text2, border: `1px solid ${C.border}`, borderRadius: 12, padding: "12px 0", fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
+                퀴즈노스 주문
+              </button>
+            </div>
+          </div>
+
+          {/* ── 오른쪽: 달력 ── */}
+          <div className="right-panel">
+            <p style={{ margin: "0 0 10px", fontSize: 11, fontWeight: 600, color: C.text3, letterSpacing: "0.05em" }}>메뉴 기록</p>
+            <MenuCalendar
+              selectedDate={selectedDate}
+              dataByDate={dataByDate}
+              onDateSelect={setSelectedDate}
+              onMonthChange={handleMonthChange}
+            />
+          </div>
         </div>
       </main>
 
