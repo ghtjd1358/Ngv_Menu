@@ -343,6 +343,17 @@ export default function App() {
       .catch(() => {});
   }, [API_BASE]);
 
+  // 내일 메뉴 선제 로딩 (달력 클릭 전에도 셀에 표시되도록)
+  useEffect(() => {
+    const tomorrow = getKSTDateStr(1);
+    fetch(`${API_BASE}/api/menu/today?date=${tomorrow}`, { cache: "no-store" })
+      .then(r => r.ok ? r.json() : null)
+      .then(json => {
+        if (json?.restaurants) setDataByDate(prev => prev[tomorrow] ? prev : { ...prev, [tomorrow]: json });
+      })
+      .catch(() => {});
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     fetchMenu(TODAY);
     fetch(`${API_BASE}/api/menu/dates`)
