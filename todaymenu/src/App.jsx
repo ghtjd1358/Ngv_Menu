@@ -96,16 +96,16 @@ function isSectionHidden(label) {
 
 function ItemList({ items, showPrices = false }) {
   return (
-    <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 6 }}>
+    <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 6, width: "100%" }}>
       {items.map((item, i) =>
         item.type === "section" ? (
-          <li key={i} style={{ paddingTop: i === 0 ? 0 : 4 }}>
+          <li key={i} style={{ paddingTop: i === 0 ? 0 : 4, width: "100%" }}>
             <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.04em", color: C.accent }}>{item.label}</span>
           </li>
         ) : (
-          <li key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
-            <span style={{ fontSize: 15, color: C.text1, lineHeight: 1.5 }}>{item.name}</span>
-            {showPrices && item.price && <span style={{ fontSize: 13, color: C.text3, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{item.price}</span>}
+          <li key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8, width: "100%", minWidth: 0 }}>
+            <span style={{ flex: 1, minWidth: 0, fontSize: 15, color: C.text1, lineHeight: 1.5, wordBreak: "keep-all" }}>{item.name}</span>
+            {showPrices && item.price && <span style={{ fontSize: 13, color: C.text3, whiteSpace: "nowrap", flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{item.price}</span>}
           </li>
         )
       )}
@@ -147,7 +147,7 @@ function RestaurantCard({ restaurant, liked, onToggle, accentColor }) {
 
   const color = accentColor || C.accent;
   return (
-    <div style={{ background: C.card, borderRadius: 16, boxShadow: "0 2px 16px rgba(20,30,60,0.08)", borderLeft: `5px solid ${color}`, display: "flex", flexDirection: "column" }}>
+    <div style={{ background: C.card, borderRadius: 16, boxShadow: "0 2px 16px rgba(20,30,60,0.08)", borderLeft: `5px solid ${color}`, display: "flex", flexDirection: "column", width: "100%", minWidth: 0 }}>
       <div style={{ padding: "18px 20px 14px" }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
           <div>
@@ -158,7 +158,7 @@ function RestaurantCard({ restaurant, liked, onToggle, accentColor }) {
         </div>
       </div>
       <div style={{ height: 1, background: C.border, margin: "0 20px" }} />
-      <div style={{ flex: 1, padding: "16px 20px" }}>
+      <div style={{ flex: 1, padding: "16px 20px", minWidth: 0, width: "100%" }}>
         {mainItems.length === 0 && !hasOrder ? (
           <p style={{ margin: 0, fontSize: 13, color: C.text3 }}>메뉴 정보 없음</p>
         ) : (
