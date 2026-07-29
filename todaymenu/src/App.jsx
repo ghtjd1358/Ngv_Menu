@@ -7,10 +7,10 @@ import MenuCalendar from "./MenuCalendar";
 
 // ── Palette ──────────────────────────────────────────────────────────────────
 const C = {
-  bg: "#F4F6FB",
-  card: "#FFFFFF",
+  bg: "#FFFFFF",
+  card: "#F8F9FC",
   header: "#1E2433",
-  border: "#DEE3EF",
+  border: "#E4E7F0",
   text1: "#1E2433",
   text2: "#5B6070",
   text3: "#8892A4",
@@ -100,12 +100,12 @@ function ItemList({ items }) {
       {items.map((item, i) =>
         item.type === "section" ? (
           <li key={i} style={{ paddingTop: i === 0 ? 0 : 4 }}>
-            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", color: C.accent }}>{item.label}</span>
+            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", color: C.accent }}>{item.label}</span>
           </li>
         ) : (
           <li key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
-            <span style={{ fontSize: 13, color: C.text1, lineHeight: 1.45 }}>{item.name}</span>
-            {item.price && <span style={{ fontSize: 11, color: C.text3, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{item.price}</span>}
+            <span style={{ fontSize: 15, color: C.text1, lineHeight: 1.5 }}>{item.name}</span>
+            {item.price && <span style={{ fontSize: 12, color: C.text3, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{item.price}</span>}
           </li>
         )
       )}
@@ -150,8 +150,8 @@ function RestaurantCard({ restaurant, liked, onToggle }) {
       <div style={{ padding: "20px 20px 16px" }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
           <div>
-            <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: C.text1 }}>{name}</p>
-            {hours && <p style={{ margin: "3px 0 0", fontSize: 11, color: C.text3 }}>{hours}</p>}
+            <p style={{ margin: 0, fontSize: 17, fontWeight: 700, color: C.text1 }}>{name}</p>
+            {hours && <p style={{ margin: "3px 0 0", fontSize: 12, color: C.text3 }}>{hours}</p>}
           </div>
           <StatusBadge hoursStr={hours} />
         </div>

@@ -52,7 +52,7 @@ export default function MenuCalendar({ selectedDate, dataByDate, onDateSelect, o
   for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
 
   return (
-    <div style={{ border: "1px solid #DEE3EF", borderRadius: 16, overflow: "hidden" }}>
+    <div style={{ border: "1.5px solid #C8CEDF", borderRadius: 16, overflow: "hidden", boxShadow: "0 2px 12px rgba(30,36,51,0.07)" }}>
       {/* 헤더: 월 네비게이션 + 요일 */}
       <div style={{ background: "#1E2433", padding: "12px 16px 0" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
@@ -73,7 +73,7 @@ export default function MenuCalendar({ selectedDate, dataByDate, onDateSelect, o
       </div>
 
       {/* 달력 본체 */}
-      <div style={{ padding: 6 }}>
+      <div style={{ padding: 6, background: "#fff" }}>
         {weeks.map((week, wi) => (
           <div key={wi} style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2, marginBottom: 2 }}>
             {week.map((day, di) => {
