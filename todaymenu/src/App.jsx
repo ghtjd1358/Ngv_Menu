@@ -1,8 +1,10 @@
 import "./App.css";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { ko } from "date-fns/locale";
-import { format, parseISO, addDays } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { getOrCreateAnonymousId } from "./utils/anonymousId";
+import { getKSTDateStr } from "./utils/date";
+import { stripMenuPrice } from "./utils/menu";
 import MenuCalendar from "./MenuCalendar";
 
 // ── Palette ──────────────────────────────────────────────────────────────────
@@ -23,11 +25,6 @@ const C = {
   red: "#DC2626",
   redLight: "#FEE2E2",
 };
-
-// ── Date helpers (date-fns 기반) ─────────────────────────────────────────────
-function getKSTDateStr(offsetDays = 0) {
-  return format(addDays(new Date(), offsetDays), "yyyy-MM-dd");
-}
 
 function formatLabel(isoStr) {
   return format(parseISO(isoStr), "M월 d일 EEEE", { locale: ko });
@@ -58,7 +55,7 @@ function parseMenuLine(text) {
   const sect = text.match(/^<(.+?)>\s*(.+)?$/);
   if (sect) return { type: "section", label: sect[1], extra: sect[2] || null };
   const priced = text.match(/^(.+?)\s*[：:]\s*(\d[\d,]*원)\s*$/);
-  if (priced) return { type: "item", name: priced[1].trim(), price: priced[2] };
+  if (priced) return { type: "item", name: stripMenuPrice(text), price: priced[2] };
   return { type: "item", name: text, price: null };
 }
 
@@ -118,30 +115,22 @@ function RestaurantCard({ restaurant, liked, onToggle, accentColor }) {
   const { name, hours, lunch } = restaurant;
   const [showOrder, setShowOrder] = useState(false);
 
-  const allParsed = (Array.isArray(lunch) ? lunch : []).map(parseMenuLine);
-
-  // 섹션별로 분류: 숨김 / 주문식 / 일반
-  const mainItems = [];
-  const orderItems = [];
-  let state = "main"; // "main" | "order" | "hidden"
-
-  for (const item of allParsed) {
-    if (item.type === "section") {
-      if (isSectionHidden(item.label)) {
-        state = "hidden";
-      } else if (item.label.includes("주문식")) {
-        state = "order";
-        orderItems.push(item);
+  const { mainItems, orderItems } = useMemo(() => {
+    const allParsed = (Array.isArray(lunch) ? lunch : []).map(parseMenuLine);
+    const mainItems = [], orderItems = [];
+    let state = "main";
+    for (const item of allParsed) {
+      if (item.type === "section") {
+        if (isSectionHidden(item.label)) state = "hidden";
+        else if (item.label.includes("주문식")) { state = "order"; orderItems.push(item); }
+        else { state = "main"; mainItems.push(item); }
       } else {
-        state = "main";
-        mainItems.push(item);
+        if (state === "main") mainItems.push(item);
+        else if (state === "order") orderItems.push(item);
       }
-    } else {
-      if (state === "main") mainItems.push(item);
-      else if (state === "order") orderItems.push(item);
-      // hidden → 버림
     }
-  }
+    return { mainItems, orderItems };
+  }, [lunch]);
 
   const hasOrder = orderItems.some(i => i.type === "item");
 
@@ -361,18 +350,22 @@ export default function App() {
 
   useEffect(() => { setAnonymousId(getOrCreateAnonymousId()); }, []);
 
-  const fetchMenu = useCallback((date) => {
-    if (dataByDate[date] || loadingDate === date) return;
-    setLoadingDate(date);
+  // 동시 fetch 추적 (loadingDate는 스피너 표시용, inFlight는 dedup용)
+  const inFlight = useRef(new Set());
+
+  const fetchMenu = useCallback((date, silent = false) => {
+    if (dataByDate[date] || inFlight.current.has(date)) return;
+    inFlight.current.add(date);
+    if (!silent) setLoadingDate(date);
     fetch(`${API_BASE}/api/menu/today?date=${date}`, { cache: "no-store" })
       .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
       .then(json => {
         setDataByDate(prev => ({ ...prev, [date]: json }));
-        setErrorByDate(prev => ({ ...prev, [date]: null }));
+        if (!silent) setErrorByDate(prev => ({ ...prev, [date]: null }));
       })
-      .catch(e => setErrorByDate(prev => ({ ...prev, [date]: e?.message || "오류" })))
-      .finally(() => setLoadingDate(null));
-  }, [dataByDate, loadingDate, API_BASE]);
+      .catch(e => { if (!silent) setErrorByDate(prev => ({ ...prev, [date]: e?.message || "오류" })); })
+      .finally(() => { inFlight.current.delete(date); if (!silent) setLoadingDate(null); });
+  }, [dataByDate, API_BASE]);
 
   const fetchMonthData = useCallback((year, month) => {
     fetch(`${API_BASE}/api/menu/month?year=${year}&month=${month}`)
@@ -385,19 +378,9 @@ export default function App() {
       .catch(() => {});
   }, [API_BASE]);
 
-  // 내일 메뉴 선제 로딩 (달력 클릭 전에도 셀에 표시되도록)
-  useEffect(() => {
-    const tomorrow = getKSTDateStr(1);
-    fetch(`${API_BASE}/api/menu/today?date=${tomorrow}`, { cache: "no-store" })
-      .then(r => r.ok ? r.json() : null)
-      .then(json => {
-        if (json?.restaurants) setDataByDate(prev => prev[tomorrow] ? prev : { ...prev, [tomorrow]: json });
-      })
-      .catch(() => {});
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
   useEffect(() => {
     fetchMenu(TODAY);
+    fetchMenu(getKSTDateStr(1), true); // 내일 메뉴 선제 로딩 (silent)
     fetch(`${API_BASE}/api/menu/dates`)
       .then(r => r.json())
       .then(json => {
@@ -504,8 +487,6 @@ export default function App() {
               )}
             </div>
 
-            {/* 메뉴 – minHeight로 달력 레이아웃 흔들림 방지 */}
-            <div style={{ minHeight: 480 }}>
             {loading ? (
               <div style={{ display: "flex", justifyContent: "center", padding: "40px 0", fontSize: 14, color: C.text3 }}>메뉴 불러오는 중…</div>
             ) : error ? (
@@ -541,7 +522,6 @@ export default function App() {
                 {dure && <RestaurantCard restaurant={dure} accentColor={C.green} liked={!!likes["dure"]} onToggle={() => handleToggle("dure")} />}
               </div>
             )}
-            </div>{/* /minHeight wrapper */}
 
           </div>
 

@@ -1,20 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { getHoliday } from "./utils/holidays";
+import { todayKST } from "./utils/date";
+import { stripMenuPrice } from "./utils/menu";
 
 const NAV = { background: "none", border: "none", color: "rgba(255,255,255,0.75)", cursor: "pointer", fontSize: 22, lineHeight: 1, padding: "0 8px" };
 const DAY_NAMES = ["일", "월", "화", "수", "목", "금", "토"];
 
 function cellISO(year, month, day) {
   return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-}
-
-function todayKST() {
-  return new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Seoul" }).format(new Date());
-}
-
-// 메뉴 텍스트 정규화
-function cleanItem(text) {
-  return text.replace(/\s*[：:]\s*[\d,]+원\s*$/, "").trim();
 }
 
 export default function MenuCalendar({ selectedDate, dataByDate, onDateSelect, onMonthChange }) {
@@ -31,7 +24,8 @@ export default function MenuCalendar({ selectedDate, dataByDate, onDateSelect, o
     });
   }, [selectedDate]);
 
-  const today = todayKST();
+  // useMemo: 세션 내 날짜가 바뀌지 않으므로 1회만 계산
+  const today = useMemo(() => todayKST(), []);
   const { year, month } = view;
 
   const navigate = (delta) => {
@@ -42,11 +36,11 @@ export default function MenuCalendar({ selectedDate, dataByDate, onDateSelect, o
     onMonthChange?.(new Date(y, m - 1, 1));
   };
 
-  // 달력 그리드 생성
+  // 항상 42칸(6행) 고정 → 월 이동 시 달력 높이 불변
   const startDow = new Date(year, month - 1, 1).getDay();
   const lastDay = new Date(year, month, 0).getDate();
   const cells = [...Array(startDow).fill(null), ...Array.from({ length: lastDay }, (_, i) => i + 1)];
-  while (cells.length % 7 !== 0) cells.push(null);
+  while (cells.length < 42) cells.push(null); // 6행 고정
 
   const weeks = [];
   for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
@@ -92,7 +86,7 @@ export default function MenuCalendar({ selectedDate, dataByDate, onDateSelect, o
               const menuItems = (r301?.lunch || [])
                 .filter(l => l.length > 1 && !l.startsWith("<"))
                 .slice(0, 6)
-                .map(cleanItem);
+                .map(stripMenuPrice);
 
               const numColor = isSelected ? "#fff"
                 : isRed ? "#F87171"
