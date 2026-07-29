@@ -1,12 +1,9 @@
 import "./App.css";
-import { useEffect, useMemo, useState, useCallback } from "react";
-import DatePicker, { registerLocale } from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
+import { useEffect, useState, useCallback } from "react";
 import { ko } from "date-fns/locale";
-import { format, parseISO, addDays, isToday, isSameDay } from "date-fns";
+import { format, parseISO, addDays } from "date-fns";
 import { getOrCreateAnonymousId } from "./utils/anonymousId";
-
-registerLocale("ko", ko);
+import MenuCalendar from "./MenuCalendar";
 
 // ── Palette ──────────────────────────────────────────────────────────────────
 const C = {
@@ -30,14 +27,6 @@ const C = {
 // ── Date helpers (date-fns 기반) ─────────────────────────────────────────────
 function getKSTDateStr(offsetDays = 0) {
   return format(addDays(new Date(), offsetDays), "yyyy-MM-dd");
-}
-
-function toDate(isoStr) {
-  return parseISO(isoStr);
-}
-
-function toISO(date) {
-  return format(date, "yyyy-MM-dd");
 }
 
 function formatLabel(isoStr) {
@@ -97,10 +86,64 @@ function StatusBadge({ hoursStr }) {
   return badge(C.greenLight, C.green, C.green, `영업중 · ${s.diff}분 후 종료`, true);
 }
 
+// 숨길 섹션 키워드 (회사 직원이 이용 불가한 식당/코너)
+const HIDDEN_SECTION_KEYWORDS = ["교직원", "take-out", "테이크아웃", "카페", "고기국수", "제주식", "take out"];
+
+function isSectionHidden(label) {
+  const lower = label.toLowerCase();
+  return HIDDEN_SECTION_KEYWORDS.some(kw => lower.includes(kw));
+}
+
+function ItemList({ items }) {
+  return (
+    <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 6 }}>
+      {items.map((item, i) =>
+        item.type === "section" ? (
+          <li key={i} style={{ paddingTop: i === 0 ? 0 : 4 }}>
+            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", color: C.accent }}>{item.label}</span>
+          </li>
+        ) : (
+          <li key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
+            <span style={{ fontSize: 13, color: C.text1, lineHeight: 1.45 }}>{item.name}</span>
+            {item.price && <span style={{ fontSize: 11, color: C.text3, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{item.price}</span>}
+          </li>
+        )
+      )}
+    </ul>
+  );
+}
+
 // ── Restaurant card ──────────────────────────────────────────────────────────
 function RestaurantCard({ restaurant, liked, onToggle }) {
   const { name, hours, lunch } = restaurant;
-  const items = (Array.isArray(lunch) ? lunch : []).map(parseMenuLine);
+  const [showOrder, setShowOrder] = useState(false);
+
+  const allParsed = (Array.isArray(lunch) ? lunch : []).map(parseMenuLine);
+
+  // 섹션별로 분류: 숨김 / 주문식 / 일반
+  const mainItems = [];
+  const orderItems = [];
+  let state = "main"; // "main" | "order" | "hidden"
+
+  for (const item of allParsed) {
+    if (item.type === "section") {
+      if (isSectionHidden(item.label)) {
+        state = "hidden";
+      } else if (item.label.includes("주문식")) {
+        state = "order";
+        orderItems.push(item);
+      } else {
+        state = "main";
+        mainItems.push(item);
+      }
+    } else {
+      if (state === "main") mainItems.push(item);
+      else if (state === "order") orderItems.push(item);
+      // hidden → 버림
+    }
+  }
+
+  const hasOrder = orderItems.some(i => i.type === "item");
 
   return (
     <div style={{ background: C.card, borderRadius: 20, boxShadow: `0 0 0 1px ${C.border}`, display: "flex", flexDirection: "column" }}>
@@ -115,24 +158,28 @@ function RestaurantCard({ restaurant, liked, onToggle }) {
       </div>
       <div style={{ height: 1, background: "#EEF0F6", margin: "0 20px" }} />
       <div style={{ flex: 1, padding: "16px 20px" }}>
-        {items.length === 0 ? (
+        {mainItems.length === 0 && !hasOrder ? (
           <p style={{ margin: 0, fontSize: 13, color: C.text3 }}>메뉴 정보 없음</p>
         ) : (
-          <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 6 }}>
-            {items.map((item, i) =>
-              item.type === "section" ? (
-                <li key={i} style={{ display: "flex", justifyContent: "space-between", paddingTop: i === 0 ? 0 : 6 }}>
-                  <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: C.accent }}>{item.label}</span>
-                  {item.extra && <span style={{ fontSize: 10, fontWeight: 700, color: C.accent }}>{item.extra}</span>}
-                </li>
-              ) : (
-                <li key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
-                  <span style={{ fontSize: 13, color: C.text1, lineHeight: 1.45 }}>{item.name}</span>
-                  {item.price && <span style={{ fontSize: 11, color: C.text3, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{item.price}</span>}
-                </li>
-              )
+          <>
+            {mainItems.length > 0 && <ItemList items={mainItems} />}
+
+            {/* 주문식 토글 (기본 닫힘 – 개인 사비 메뉴) */}
+            {hasOrder && (
+              <div style={{ marginTop: mainItems.length > 0 ? 12 : 0 }}>
+                <button type="button" onClick={() => setShowOrder(s => !s)}
+                  style={{ display: "flex", alignItems: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: 0, color: C.text3, fontSize: 12, fontWeight: 600 }}>
+                  <span style={{ fontSize: 11, transition: "transform 0.15s", display: "inline-block", transform: showOrder ? "rotate(90deg)" : "rotate(0deg)" }}>▶</span>
+                  주문식 메뉴 (개인 사비)
+                </button>
+                {showOrder && (
+                  <div style={{ marginTop: 8 }}>
+                    <ItemList items={orderItems} />
+                  </div>
+                )}
+              </div>
             )}
-          </ul>
+          </>
         )}
       </div>
       <div style={{ padding: "0 20px 16px", display: "flex", justifyContent: "flex-end" }}>
@@ -420,30 +467,6 @@ export default function App() {
     }
   }, [anonymousId, likes]);
 
-  const renderDayContents = useCallback((dayOfMonth, date) => {
-    const iso = toISO(date);
-    const menu = dataByDate[iso];
-    const items = menu?.restaurants?.flatMap(r =>
-      (r.lunch || [])
-        .filter(l => l.length > 1 && !l.startsWith("<"))
-        .slice(0, 2)
-        .map(l => l.replace(/\s*[：:]\s*[\d,]+원\s*$/, "").trim())
-    ).slice(0, 4) || [];
-
-    return (
-      <div className="day-cell-inner">
-        <span className="day-num">{dayOfMonth}</span>
-        {items.map((item, i) => (
-          <div key={i} className="day-menu-text">{item}</div>
-        ))}
-      </div>
-    );
-  }, [dataByDate]);
-
-  // react-datepicker용 Date 객체
-  const selectedDateObj = useMemo(() => toDate(selectedDate), [selectedDate]);
-  const availableDateObjs = useMemo(() => availableDates.map(toDate), [availableDates]);
-
   const data = dataByDate[selectedDate];
   const loading = loadingDate === selectedDate || (!data && !errorByDate[selectedDate]);
   const error = errorByDate[selectedDate];
@@ -531,20 +554,12 @@ export default function App() {
         {/* 3. 달력 */}
         <div style={{ marginTop: 20 }}>
           <p style={{ margin: "0 0 10px", fontSize: 11, fontWeight: 600, color: C.text3, letterSpacing: "0.05em" }}>메뉴 기록</p>
-          <div className="calendar-wrapper">
-            <DatePicker
-              selected={selectedDateObj}
-              onChange={(date) => date && setSelectedDate(toISO(date))}
-              onMonthChange={handleMonthChange}
-              renderDayContents={renderDayContents}
-              inline
-              locale="ko"
-              highlightDates={availableDateObjs}
-              minDate={availableDates.length > 0 ? toDate(availableDates[0]) : undefined}
-              maxDate={addDays(new Date(), 30)}
-              calendarClassName="menu-calendar"
-            />
-          </div>
+          <MenuCalendar
+            selectedDate={selectedDate}
+            dataByDate={dataByDate}
+            onDateSelect={setSelectedDate}
+            onMonthChange={handleMonthChange}
+          />
         </div>
       </main>
 
