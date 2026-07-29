@@ -7,15 +7,15 @@ import MenuCalendar from "./MenuCalendar";
 
 // ── Palette ──────────────────────────────────────────────────────────────────
 const C = {
-  bg: "#FFFFFF",
-  card: "#F8F9FC",
-  header: "#1E2433",
-  border: "#E4E7F0",
-  text1: "#1E2433",
-  text2: "#5B6070",
-  text3: "#8892A4",
-  accent: "#4361EE",
-  accentLight: "#EEF1FD",
+  bg: "#F0F2F8",        // 연한 청회색 배경 – 흰 카드가 뜨도록
+  card: "#FFFFFF",      // 카드 순백
+  header: "#111827",
+  border: "#DDE1EF",
+  text1: "#111827",
+  text2: "#4B5563",
+  text3: "#9CA3AF",
+  accent: "#3B5BDB",
+  accentLight: "#EEF2FF",
   green: "#059669",
   greenLight: "#D1FAE5",
   amber: "#B45309",
@@ -72,7 +72,7 @@ function StatusBadge({ hoursStr }) {
   if (!s) return null;
 
   const badge = (bg, color, dotColor, label, pulse) => (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, borderRadius: 99, padding: "2px 10px", fontSize: 11, fontWeight: 600, background: bg, color, whiteSpace: "nowrap" }}>
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, borderRadius: 99, padding: "3px 11px", fontSize: 13, fontWeight: 600, background: bg, color, whiteSpace: "nowrap" }}>
       <span className={pulse ? "pulse" : ""} style={{ width: 6, height: 6, borderRadius: 99, background: dotColor, display: "inline-block" }} />
       {label}
     </span>
@@ -100,12 +100,12 @@ function ItemList({ items }) {
       {items.map((item, i) =>
         item.type === "section" ? (
           <li key={i} style={{ paddingTop: i === 0 ? 0 : 4 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", color: C.accent }}>{item.label}</span>
+            <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.04em", color: C.accent }}>{item.label}</span>
           </li>
         ) : (
           <li key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
             <span style={{ fontSize: 15, color: C.text1, lineHeight: 1.5 }}>{item.name}</span>
-            {item.price && <span style={{ fontSize: 12, color: C.text3, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{item.price}</span>}
+            {item.price && <span style={{ fontSize: 13, color: C.text3, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{item.price}</span>}
           </li>
         )
       )}
@@ -114,7 +114,7 @@ function ItemList({ items }) {
 }
 
 // ── Restaurant card ──────────────────────────────────────────────────────────
-function RestaurantCard({ restaurant, liked, onToggle }) {
+function RestaurantCard({ restaurant, liked, onToggle, accentColor }) {
   const { name, hours, lunch } = restaurant;
   const [showOrder, setShowOrder] = useState(false);
 
@@ -145,18 +145,19 @@ function RestaurantCard({ restaurant, liked, onToggle }) {
 
   const hasOrder = orderItems.some(i => i.type === "item");
 
+  const color = accentColor || C.accent;
   return (
-    <div style={{ background: C.card, borderRadius: 20, boxShadow: `0 0 0 1px ${C.border}`, display: "flex", flexDirection: "column" }}>
-      <div style={{ padding: "20px 20px 16px" }}>
+    <div style={{ background: C.card, borderRadius: 16, boxShadow: "0 2px 16px rgba(20,30,60,0.08)", borderLeft: `5px solid ${color}`, display: "flex", flexDirection: "column" }}>
+      <div style={{ padding: "18px 20px 14px" }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
           <div>
             <p style={{ margin: 0, fontSize: 17, fontWeight: 700, color: C.text1 }}>{name}</p>
-            {hours && <p style={{ margin: "3px 0 0", fontSize: 12, color: C.text3 }}>{hours}</p>}
+            {hours && <p style={{ margin: "4px 0 0", fontSize: 13, color: C.text3 }}>{hours}</p>}
           </div>
           <StatusBadge hoursStr={hours} />
         </div>
       </div>
-      <div style={{ height: 1, background: "#EEF0F6", margin: "0 20px" }} />
+      <div style={{ height: 1, background: C.border, margin: "0 20px" }} />
       <div style={{ flex: 1, padding: "16px 20px" }}>
         {mainItems.length === 0 && !hasOrder ? (
           <p style={{ margin: 0, fontSize: 13, color: C.text3 }}>메뉴 정보 없음</p>
@@ -168,8 +169,8 @@ function RestaurantCard({ restaurant, liked, onToggle }) {
             {hasOrder && (
               <div style={{ marginTop: mainItems.length > 0 ? 12 : 0 }}>
                 <button type="button" onClick={() => setShowOrder(s => !s)}
-                  style={{ display: "flex", alignItems: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: 0, color: C.text3, fontSize: 12, fontWeight: 600 }}>
-                  <span style={{ fontSize: 11, transition: "transform 0.15s", display: "inline-block", transform: showOrder ? "rotate(90deg)" : "rotate(0deg)" }}>▶</span>
+                  style={{ display: "flex", alignItems: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: 0, color: C.text3, fontSize: 13, fontWeight: 600 }}>
+                  <span style={{ fontSize: 10, transition: "transform 0.15s", display: "inline-block", transform: showOrder ? "rotate(90deg)" : "rotate(0deg)" }}>▶</span>
                   주문식 메뉴 (개인 사비)
                 </button>
                 {showOrder && (
@@ -184,7 +185,7 @@ function RestaurantCard({ restaurant, liked, onToggle }) {
       </div>
       <div style={{ padding: "0 20px 16px", display: "flex", justifyContent: "flex-end" }}>
         <button type="button" onClick={onToggle} aria-pressed={liked}
-          style={{ display: "inline-flex", alignItems: "center", gap: 5, borderRadius: 99, padding: "4px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer", border: "none", background: liked ? C.redLight : "#F4F6FB", color: liked ? C.red : C.text3 }}>
+          style={{ display: "inline-flex", alignItems: "center", gap: 5, borderRadius: 99, padding: "5px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer", border: "none", background: liked ? C.redLight : C.bg, color: liked ? C.red : C.text3 }}>
           {liked ? "찜됨" : "찜하기"}
         </button>
       </div>
@@ -478,7 +479,7 @@ export default function App() {
             <span style={{ width: 22, height: 22, background: C.accent, borderRadius: 6, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "#fff" }}>식</span>
             <span style={{ fontSize: 14, fontWeight: 700, color: "#FFFFFF" }}>엔지미식회</span>
           </div>
-          <span style={{ fontSize: 12, color: "#6B7A99" }}>{formatLabel(selectedDate)}</span>
+          <span style={{ fontSize: 13, color: "#8A95B0" }}>{formatLabel(selectedDate)}</span>
         </div>
       </header>
 
@@ -487,63 +488,70 @@ export default function App() {
         <div className="app-layout">
           {/* ── 왼쪽: 오늘 메뉴 + 버튼 ── */}
           <div className="left-panel">
-            {/* 선택 날짜 표시 + 오늘 버튼 */}
-            {selectedDate !== TODAY && (
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-                <span style={{ fontSize: 13, fontWeight: 600, color: C.text2 }}>{formatLabel(selectedDate)}</span>
+            {/* 날짜 헤더 (항상 표시) */}
+            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 18 }}>
+              <div>
+                <p style={{ margin: "0 0 3px", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: C.text3 }}>
+                  {selectedDate === TODAY ? "오늘" : selectedDate === TOMORROW ? "내일" : "선택 날짜"}
+                </p>
+                <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: C.text1, lineHeight: 1.2 }}>
+                  {formatLabel(selectedDate)}
+                </p>
+              </div>
+              {selectedDate !== TODAY && (
                 <button type="button" onClick={() => setSelectedDate(TODAY)}
-                  style={{ background: C.accentLight, color: C.accent, border: "none", borderRadius: 8, padding: "5px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+                  style={{ background: C.accentLight, color: C.accent, border: "none", borderRadius: 8, padding: "6px 14px", fontSize: 13, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}>
                   오늘로
                 </button>
-              </div>
-            )}
+              )}
+            </div>
 
             {/* 메뉴 */}
             {loading ? (
-              <div style={{ display: "flex", justifyContent: "center", padding: "40px 0", fontSize: 13, color: C.text3 }}>메뉴 불러오는 중…</div>
+              <div style={{ display: "flex", justifyContent: "center", padding: "40px 0", fontSize: 14, color: C.text3 }}>메뉴 불러오는 중…</div>
             ) : error ? (
               <div style={{ background: C.redLight, borderRadius: 16, padding: 20 }}>
-                <p style={{ margin: 0, fontSize: 13, color: C.red }}>{error}</p>
+                <p style={{ margin: 0, fontSize: 14, color: C.red }}>{error}</p>
                 <button type="button" onClick={() => { setErrorByDate(p => ({ ...p, [selectedDate]: null })); fetchMenu(selectedDate); }}
-                  style={{ marginTop: 12, background: C.red, color: "#fff", border: "none", borderRadius: 99, padding: "6px 16px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+                  style={{ marginTop: 12, background: C.red, color: "#fff", border: "none", borderRadius: 99, padding: "7px 18px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
                   다시 시도
                 </button>
               </div>
             ) : noMenuData ? (
-              <div style={{ background: C.card, borderRadius: 16, padding: 32, textAlign: "center", boxShadow: `0 0 0 1px ${C.border}` }}>
-                <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: C.text2 }}>
+              <div style={{ background: C.card, borderRadius: 16, padding: 32, textAlign: "center", boxShadow: "0 2px 12px rgba(20,30,60,0.07)" }}>
+                <p style={{ margin: 0, fontSize: 15, fontWeight: 600, color: C.text2 }}>
                   {selectedDate < TODAY ? "해당 날짜의 메뉴 데이터가 없습니다"
                     : selectedDate === TODAY ? "오늘 메뉴를 불러오지 못했습니다"
                     : "아직 업데이트되지 않았습니다"}
                 </p>
-                <p style={{ margin: "8px 0 0", fontSize: 12, color: C.text3 }}>
+                <p style={{ margin: "8px 0 0", fontSize: 13, color: C.text3 }}>
                   {selectedDate < TODAY ? "서비스 시작 이전이거나 기록이 없습니다"
                     : selectedDate === TODAY ? "잠시 후 다시 시도해주세요"
                     : "내일 메뉴는 당일 오전 중 업데이트됩니다"}
                 </p>
                 {selectedDate !== TODAY && (
                   <button type="button" onClick={() => setSelectedDate(TODAY)}
-                    style={{ marginTop: 16, background: C.accentLight, color: C.accent, border: "none", borderRadius: 8, padding: "7px 16px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+                    style={{ marginTop: 16, background: C.accentLight, color: C.accent, border: "none", borderRadius: 8, padding: "8px 18px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
                     오늘 메뉴 보기
                   </button>
                 )}
               </div>
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                {r301 && <RestaurantCard restaurant={r301} liked={!!likes["301"]} onToggle={() => handleToggle("301")} />}
-                {dure && <RestaurantCard restaurant={dure} liked={!!likes["dure"]} onToggle={() => handleToggle("dure")} />}
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                {r301 && <RestaurantCard restaurant={r301} accentColor={C.accent} liked={!!likes["301"]} onToggle={() => handleToggle("301")} />}
+                {dure && <RestaurantCard restaurant={dure} accentColor={C.green} liked={!!likes["dure"]} onToggle={() => handleToggle("dure")} />}
               </div>
             )}
 
             {/* 포케 / 퀴즈노스 버튼 */}
-            <div style={{ marginTop: 16, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div style={{ marginTop: 14, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
               <button type="button"
                 onClick={() => window.open("https://m.booking.naver.com/order/bizes/1397805/items/6691932?theme=place&service-target=map-pc&refererCode=menutab&lang=ko&area=ple", "_blank", "noopener,noreferrer")}
-                style={{ background: C.card, color: C.text2, border: `1px solid ${C.border}`, borderRadius: 12, padding: "12px 0", fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
+                style={{ background: C.card, color: C.text1, border: `1.5px solid ${C.border}`, borderRadius: 12, padding: "13px 0", fontSize: 14, fontWeight: 600, cursor: "pointer", boxShadow: "0 1px 4px rgba(20,30,60,0.06)" }}>
                 포케 올데이 메뉴
               </button>
               <button type="button" onClick={() => setQuiznosOpen(true)}
-                style={{ background: C.card, color: C.text2, border: `1px solid ${C.border}`, borderRadius: 12, padding: "12px 0", fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
+                style={{ background: C.card, color: C.text1, border: `1.5px solid ${C.border}`, borderRadius: 12, padding: "13px 0", fontSize: 14, fontWeight: 600, cursor: "pointer", boxShadow: "0 1px 4px rgba(20,30,60,0.06)" }}>
                 퀴즈노스 주문
               </button>
             </div>
@@ -551,7 +559,7 @@ export default function App() {
 
           {/* ── 오른쪽: 달력 ── */}
           <div className="right-panel">
-            <p style={{ margin: "0 0 10px", fontSize: 11, fontWeight: 600, color: C.text3, letterSpacing: "0.05em" }}>메뉴 기록</p>
+            <p style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 700, color: C.text3, letterSpacing: "0.04em" }}>메뉴 기록</p>
             <MenuCalendar
               selectedDate={selectedDate}
               dataByDate={dataByDate}
