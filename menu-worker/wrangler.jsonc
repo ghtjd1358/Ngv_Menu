@@ -41,6 +41,12 @@
 	 */
 	// "vars": {  "MY_VARIABLE": "production_value" }
 	/**
+	 * [Secrets] 슬랙 알림 설정 방법:
+	 *   wrangler secret put SLACK_WEBHOOK_URL
+	 * Incoming Webhook URL을 입력하면 매일 오전 8시 크론 실행 후 슬랙으로 메뉴 발송
+	 * 설정 안 해도 동작에 영향 없음 (조건부 실행)
+	 */
+	/**
 	 * Static Assets
 	 * https://developers.cloudflare.com/workers/static-assets/binding/
 	 */

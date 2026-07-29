@@ -80,12 +80,13 @@ export default function MenuCalendar({ selectedDate, dataByDate, availableDates 
               const holiday = getHoliday(iso);
               const isRed = di === 0 || !!holiday;
               const isSat = di === 6;
-              // 과거 날짜이면서 데이터도 없으면 비활성화
-              const isPast = iso < today;
-              const isDisabled = isPast && !availableSet.has(iso) && !menuData;
 
               // 달력 셀: 301동식당 메뉴만 표시
               const menuData = dataByDate[iso];
+
+              // 과거 날짜이면서 데이터도 없으면 비활성화 (menuData 선언 이후에 참조)
+              const isPast = iso < today;
+              const isDisabled = isPast && !availableSet.has(iso) && !menuData;
               const r301 = menuData?.restaurants?.find(r => r.id === "301");
               const menuItems = (r301?.lunch || [])
                 .filter(l => l.length > 1 && !l.startsWith("<"))

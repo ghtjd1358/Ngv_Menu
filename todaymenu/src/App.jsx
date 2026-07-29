@@ -4,7 +4,7 @@ import { ko } from "date-fns/locale";
 import { format, parseISO } from "date-fns";
 import { getOrCreateAnonymousId } from "./utils/anonymousId";
 import { getKSTDateStr } from "./utils/date";
-import { stripMenuPrice } from "./utils/menu";
+import { stripMenuPrice, isSectionHidden } from "./utils/menu";
 import MenuCalendar from "./MenuCalendar";
 
 // ── Palette ──────────────────────────────────────────────────────────────────
@@ -65,13 +65,6 @@ function parseMenuLine(text) {
   return { type: "item", name: text, price: null };
 }
 
-// 숨길 섹션 키워드 (회사 직원이 이용 불가한 식당/코너)
-const HIDDEN_SECTION_KEYWORDS = ["교직원", "take-out", "테이크아웃", "카페", "고기국수", "제주식", "take out"];
-
-function isSectionHidden(label) {
-  const lower = label.toLowerCase();
-  return HIDDEN_SECTION_KEYWORDS.some(kw => lower.includes(kw));
-}
 
 function ItemList({ items, showPrices = false }) {
   return (
@@ -163,11 +156,10 @@ function RestaurantCard({ restaurant, liked, onToggle, accentColor }) {
 }
 
 // ── Order calculator ─────────────────────────────────────────────────────────
-let _rowId = 0;
-const emptyRow = () => ({ id: ++_rowId, name: "", sandwichId: "", drinkId: "" });
-
 function OrderCalculator({ sandwiches, drinks }) {
-  const [rows, setRows] = useState([emptyRow()]);
+  const rowIdRef = useRef(0);
+  const emptyRow = () => ({ id: ++rowIdRef.current, name: "", sandwichId: "", drinkId: "" });
+  const [rows, setRows] = useState(() => [emptyRow()]);
   const [copied, setCopied] = useState(false);
 
   const getPrice = (row) => {
@@ -259,12 +251,20 @@ function OrderCalculator({ sandwiches, drinks }) {
 // ── Quiznos modal ────────────────────────────────────────────────────────────
 function QuiznosModal({ open, onClose, items = [], drinks = [], updatedAt }) {
   const [tab, setTab] = useState("menu");
+  const sheetRef = useRef(null);
 
   useEffect(() => {
     if (!open) return;
+    // 배경 스크롤 잠금
+    document.body.style.overflow = "hidden";
+    // 모달 포커스 이동
+    sheetRef.current?.focus();
     const onKey = (e) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKey);
+    };
   }, [open, onClose]);
 
   if (!open) return null;
@@ -281,7 +281,8 @@ function QuiznosModal({ open, onClose, items = [], drinks = [], updatedAt }) {
       <button type="button" aria-label="닫기" onClick={onClose}
         className="anim-fade-in"
         style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.45)", border: "none", cursor: "pointer" }} />
-      <div style={{ position: "relative", width: "100%", maxWidth: 520, background: C.card, borderRadius: "24px 24px 0 0", padding: 24, boxShadow: "0 -8px 40px rgba(0,0,0,0.15)", maxHeight: "90vh", display: "flex", flexDirection: "column", animation: "slideUpModal 0.28s cubic-bezier(0.32, 0.72, 0, 1) both" }}>
+      <div ref={sheetRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label="퀴즈노스 주문"
+        style={{ position: "relative", width: "100%", maxWidth: 520, background: C.card, borderRadius: "24px 24px 0 0", padding: 24, boxShadow: "0 -8px 40px rgba(0,0,0,0.15)", maxHeight: "90vh", display: "flex", flexDirection: "column", animation: "slideUpModal 0.28s cubic-bezier(0.32, 0.72, 0, 1) both", outline: "none" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
           <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: C.text1 }}>퀴즈노스</p>
           <button type="button" onClick={onClose}
@@ -379,7 +380,7 @@ export default function App() {
 
   useEffect(() => {
     fetchMenu(TODAY);
-    fetchMenu(getKSTDateStr(1), true); // 내일 메뉴 선제 로딩 (silent)
+    fetchMenu(TOMORROW, true); // 내일 메뉴 선제 로딩 (silent)
     fetch(`${API_BASE}/api/menu/dates`)
       .then(r => r.json())
       .then(json => {
