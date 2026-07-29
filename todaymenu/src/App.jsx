@@ -545,8 +545,19 @@ export default function App() {
             )}
             </div>{/* /minHeight wrapper */}
 
+          </div>
+
+          {/* ── 오른쪽: 달력 + 버튼 ── */}
+          <div className="right-panel">
+            <p style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 700, color: C.text3, letterSpacing: "0.04em" }}>메뉴 기록</p>
+            <MenuCalendar
+              selectedDate={selectedDate}
+              dataByDate={dataByDate}
+              onDateSelect={setSelectedDate}
+              onMonthChange={handleMonthChange}
+            />
             {/* 포케 / 퀴즈노스 버튼 */}
-            <div style={{ marginTop: 14, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
               <button type="button"
                 onClick={() => window.open("https://m.booking.naver.com/order/bizes/1397805/items/6691932?theme=place&service-target=map-pc&refererCode=menutab&lang=ko&area=ple", "_blank", "noopener,noreferrer")}
                 style={{ background: C.card, color: C.text1, border: `1.5px solid ${C.border}`, borderRadius: 12, padding: "13px 0", fontSize: 14, fontWeight: 600, cursor: "pointer", boxShadow: "0 1px 4px rgba(20,30,60,0.06)" }}>
@@ -557,17 +568,6 @@ export default function App() {
                 퀴즈노스 주문
               </button>
             </div>
-          </div>
-
-          {/* ── 오른쪽: 달력 ── */}
-          <div className="right-panel">
-            <p style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 700, color: C.text3, letterSpacing: "0.04em" }}>메뉴 기록</p>
-            <MenuCalendar
-              selectedDate={selectedDate}
-              dataByDate={dataByDate}
-              onDateSelect={setSelectedDate}
-              onMonthChange={handleMonthChange}
-            />
           </div>
         </div>
       </main>
