@@ -113,6 +113,7 @@ export default function MenuCalendar({ selectedDate, dataByDate, onDateSelect, o
                     gap: 2,
                     width: "100%",
                     overflow: "hidden",
+                    transition: "background 0.13s ease, border-color 0.13s ease",
                   }}
                 >
                   <span style={{ fontSize: 13, fontWeight: 700, color: numColor, lineHeight: 1.3, flexShrink: 0 }}>

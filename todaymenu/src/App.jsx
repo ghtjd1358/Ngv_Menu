@@ -167,7 +167,7 @@ function RestaurantCard({ restaurant, liked, onToggle, accentColor }) {
                   주문식 메뉴 (개인 사비)
                 </button>
                 {showOrder && (
-                  <div style={{ marginTop: 8 }}>
+                  <div className="anim-slide-down" style={{ marginTop: 8 }}>
                     <ItemList items={orderItems} showPrices />
                   </div>
                 )}
@@ -285,8 +285,9 @@ function QuiznosModal({ open, onClose, items = [], drinks = [], updatedAt }) {
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
       <button type="button" aria-label="닫기" onClick={onClose}
+        className="anim-fade-in"
         style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.45)", border: "none", cursor: "pointer" }} />
-      <div style={{ position: "relative", width: "100%", maxWidth: 520, background: C.card, borderRadius: "24px 24px 0 0", padding: 24, boxShadow: "0 -8px 40px rgba(0,0,0,0.15)", maxHeight: "90vh", display: "flex", flexDirection: "column" }}>
+      <div style={{ position: "relative", width: "100%", maxWidth: 520, background: C.card, borderRadius: "24px 24px 0 0", padding: 24, boxShadow: "0 -8px 40px rgba(0,0,0,0.15)", maxHeight: "90vh", display: "flex", flexDirection: "column", animation: "slideUpModal 0.28s cubic-bezier(0.32, 0.72, 0, 1) both" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
           <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: C.text1 }}>퀴즈노스</p>
           <button type="button" onClick={onClose}
@@ -534,7 +535,7 @@ export default function App() {
                 )}
               </div>
             ) : !loading && data ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              <div key={selectedDate} className="anim-fade-up" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                 {r301 && <RestaurantCard restaurant={r301} accentColor={C.accent} liked={!!likes["301"]} onToggle={() => handleToggle("301")} />}
                 {dure && <RestaurantCard restaurant={dure} accentColor={C.green} liked={!!likes["dure"]} onToggle={() => handleToggle("dure")} />}
               </div>

@@ -13,6 +13,33 @@ html { scrollbar-gutter: stable; }
   flex-shrink: 0;
 }
 
+/* 메뉴 카드 등장 */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.anim-fade-up { animation: fadeUp 0.22s ease-out both; }
+
+/* 토글 컨텐츠 펼침 */
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.anim-slide-down { animation: slideDown 0.16s ease-out both; }
+
+/* 모달 배경 */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.anim-fade-in { animation: fadeIn 0.2s ease-out both; }
+
+/* 바텀시트 모달 슬라이드업 */
+@keyframes slideUpModal {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
