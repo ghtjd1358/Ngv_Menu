@@ -94,7 +94,7 @@ function isSectionHidden(label) {
   return HIDDEN_SECTION_KEYWORDS.some(kw => lower.includes(kw));
 }
 
-function ItemList({ items }) {
+function ItemList({ items, showPrices = false }) {
   return (
     <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 6 }}>
       {items.map((item, i) =>
@@ -105,7 +105,7 @@ function ItemList({ items }) {
         ) : (
           <li key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
             <span style={{ fontSize: 15, color: C.text1, lineHeight: 1.5 }}>{item.name}</span>
-            {item.price && <span style={{ fontSize: 13, color: C.text3, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{item.price}</span>}
+            {showPrices && item.price && <span style={{ fontSize: 13, color: C.text3, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{item.price}</span>}
           </li>
         )
       )}
@@ -175,7 +175,7 @@ function RestaurantCard({ restaurant, liked, onToggle, accentColor }) {
                 </button>
                 {showOrder && (
                   <div style={{ marginTop: 8 }}>
-                    <ItemList items={orderItems} />
+                    <ItemList items={orderItems} showPrices />
                   </div>
                 )}
               </div>
@@ -506,7 +506,8 @@ export default function App() {
               )}
             </div>
 
-            {/* 메뉴 */}
+            {/* 메뉴 – minHeight로 달력 레이아웃 흔들림 방지 */}
+            <div style={{ minHeight: 480 }}>
             {loading ? (
               <div style={{ display: "flex", justifyContent: "center", padding: "40px 0", fontSize: 14, color: C.text3 }}>메뉴 불러오는 중…</div>
             ) : error ? (
@@ -542,6 +543,7 @@ export default function App() {
                 {dure && <RestaurantCard restaurant={dure} accentColor={C.green} liked={!!likes["dure"]} onToggle={() => handleToggle("dure")} />}
               </div>
             )}
+            </div>{/* /minHeight wrapper */}
 
             {/* 포케 / 퀴즈노스 버튼 */}
             <div style={{ marginTop: 14, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
