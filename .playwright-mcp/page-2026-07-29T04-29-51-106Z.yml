@@ -1,0 +1,743 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - link "Skip to content" [ref=e4] [cursor=pointer]:
+      - /url: "#start-of-content"
+    - banner [ref=e6]:
+      - heading "Navigation Menu" [level=2] [ref=e7]
+      - generic [ref=e9]:
+        - button "Toggle navigation" [ref=e11] [cursor=pointer]
+        - link "Homepage" [ref=e17] [cursor=pointer]:
+          - /url: /
+        - generic [ref=e20]:
+          - link "Sign in" [ref=e21] [cursor=pointer]:
+            - /url: /login?return_to=https%3A%2F%2Fgithub.com%2Fghtjd1358%2FNgv_Menu%2Factions
+          - button "Appearance settings" [disabled] [ref=e24]
+  - main [ref=e28]:
+    - generic [ref=e29]:
+      - generic [ref=e30]:
+        - generic [ref=e32]:
+          - link "ghtjd1358" [ref=e36] [cursor=pointer]:
+            - /url: /ghtjd1358
+          - generic [ref=e37]: /
+          - strong [ref=e38]:
+            - link "Ngv_Menu" [ref=e39] [cursor=pointer]:
+              - /url: /ghtjd1358/Ngv_Menu
+          - generic [ref=e40]: Public
+        - generic [ref=e41]:
+          - list:
+            - listitem [ref=e42]:
+              - link "You must be signed in to change notification settings" [ref=e43] [cursor=pointer]:
+                - /url: /login?return_to=%2Fghtjd1358%2FNgv_Menu
+                - text: Notifications
+            - listitem [ref=e46]:
+              - link "Fork 0" [ref=e47] [cursor=pointer]:
+                - /url: /login?return_to=%2Fghtjd1358%2FNgv_Menu
+                - text: Fork
+                - generic "0" [ref=e50]
+            - listitem [ref=e51]:
+              - link "You must be signed in to star a repository" [ref=e53] [cursor=pointer]:
+                - /url: /login?return_to=%2Fghtjd1358%2FNgv_Menu
+                - text: Star
+                - generic "0 users starred this repository" [ref=e56]: "0"
+      - navigation "Repository" [ref=e57]:
+        - list [ref=e58]:
+          - listitem [ref=e59]:
+            - link "Code" [ref=e60] [cursor=pointer]:
+              - /url: /ghtjd1358/Ngv_Menu
+          - listitem [ref=e64]:
+            - link "Issues" [ref=e65] [cursor=pointer]:
+              - /url: /ghtjd1358/Ngv_Menu/issues
+          - listitem [ref=e70]:
+            - link "Pull requests 1" [ref=e71] [cursor=pointer]:
+              - /url: /ghtjd1358/Ngv_Menu/pulls
+              - generic [ref=e74]: Pull requests
+              - generic "1" [ref=e75]
+          - listitem [ref=e76]:
+            - link "Actions" [ref=e77] [cursor=pointer]:
+              - /url: /ghtjd1358/Ngv_Menu/actions
+          - listitem [ref=e81]:
+            - link "Projects" [ref=e82] [cursor=pointer]:
+              - /url: /ghtjd1358/Ngv_Menu/projects
+          - listitem [ref=e86]:
+            - link "Security and quality" [ref=e87] [cursor=pointer]:
+              - /url: /ghtjd1358/Ngv_Menu/security
+          - listitem [ref=e91]:
+            - link "Insights" [ref=e92] [cursor=pointer]:
+              - /url: /ghtjd1358/Ngv_Menu/pulse
+    - generic [ref=e97]:
+      - 'heading "Actions: ghtjd1358/Ngv_Menu" [level=1] [ref=e98]'
+      - generic [ref=e101]:
+        - generic [ref=e102]:
+          - heading "Actions" [level=2] [ref=e104]
+          - navigation "Actions Workflows" [ref=e108]:
+            - list [ref=e110]:
+              - listitem [ref=e111]:
+                - link "All workflows" [ref=e112] [cursor=pointer]:
+                  - /url: /ghtjd1358/Ngv_Menu/actions
+              - listitem [ref=e114]
+              - listitem [ref=e115]:
+                - list "Workflows" [ref=e119]:
+                  - listitem [ref=e120]:
+                    - link "Deploy Pages" [ref=e121] [cursor=pointer]:
+                      - /url: /ghtjd1358/Ngv_Menu/actions/workflows/deploy-pages.yml
+                  - listitem [ref=e123]:
+                    - link "Deploy Worker" [ref=e124] [cursor=pointer]:
+                      - /url: /ghtjd1358/Ngv_Menu/actions/workflows/deploy-worker.yml
+              - listitem [ref=e126]
+              - listitem [ref=e127]:
+                - generic [ref=e130]:
+                  - heading "Management" [level=3] [ref=e132]
+                  - list "Management" [ref=e133]:
+                    - listitem [ref=e134]:
+                      - link "Caches" [ref=e135] [cursor=pointer]:
+                        - /url: /ghtjd1358/Ngv_Menu/actions/caches
+        - generic [ref=e139]:
+          - generic [ref=e140]:
+            - generic [ref=e141]:
+              - heading "All workflows" [level=2] [ref=e143]
+              - search [ref=e149]:
+                - combobox "Filter workflow runs" [ref=e150]
+            - generic [ref=e151]: Showing runs from all workflows
+          - strong [ref=e154]: 38 workflow runs
+          - generic [ref=e155]:
+            - generic [ref=e157]:
+              - button "Workflow" [ref=e161] [cursor=pointer]
+              - button "Event" [ref=e167] [cursor=pointer]
+              - button "Status" [ref=e173] [cursor=pointer]
+              - button "Branch" [ref=e179] [cursor=pointer]
+              - button "Actor" [ref=e185] [cursor=pointer]
+            - generic [ref=e188]:
+              - generic [ref=e190]:
+                - generic [ref=e191]:
+                  - 'link "completed successfully: Run 17 of Deploy Pages. feat: 2-column PC layout + 301동 only in calendar cells" [ref=e192] [cursor=pointer]':
+                    - /url: /ghtjd1358/Ngv_Menu/actions/runs/30422346258
+                    - img "completed successfully:" [ref=e194]
+                    - generic [ref=e196]: "feat: 2-column PC layout + 301동 only in calendar cells"
+                  - generic [ref=e197]:
+                    - text: "Deploy Pages #17:"
+                    - generic [ref=e198]:
+                      - text: Commit
+                      - link "7101282" [ref=e199] [cursor=pointer]:
+                        - /url: /ghtjd1358/Ngv_Menu/commit/710128286034aa9e95f32d26fec8fae0fc1a8090
+                      - text: pushed by
+                      - link "ghtjd1358" [ref=e200] [cursor=pointer]:
+                        - /url: /ghtjd1358
+                - link "main" [ref=e202] [cursor=pointer]:
+                  - /url: /ghtjd1358/Ngv_Menu/tree/refs/heads/main
+                - generic [ref=e204]:
+                  - generic [ref=e205]:
+                    - generic "Jul 29, 2026, 1:28 PM GMT+9" [ref=e210]: 1 minute ago
+                    - generic [ref=e211]:
+                      - img "Run duration" [ref=e212]
+                      - text: 30s
+                  - group [ref=e215]:
+                    - img "Show options" [ref=e217] [cursor=pointer]
+              - generic [ref=e220]:
+                - generic [ref=e221]:
+                  - 'link "completed successfully: Run 16 of Deploy Pages. feat: custom calendar with holiday colors + menu filters + 주문식 toggle" [ref=e222] [cursor=pointer]':
+                    - /url: /ghtjd1358/Ngv_Menu/actions/runs/30420466726
+                    - img "completed successfully:" [ref=e224]
+                    - generic [ref=e226]: "feat: custom calendar with holiday colors + menu filters + 주문식 toggle"
+                  - generic [ref=e227]:
+                    - text: "Deploy Pages #16:"
+                    - generic [ref=e228]:
+                      - text: Commit
+                      - link "88f3c54" [ref=e229] [cursor=pointer]:
+                        - /url: /ghtjd1358/Ngv_Menu/commit/88f3c5494f330fc058a08345699d687fc1f45463
+                      - text: pushed by
+                      - link "ghtjd1358" [ref=e230] [cursor=pointer]:
+                        - /url: /ghtjd1358
+                - link "main" [ref=e232] [cursor=pointer]:
+                  - /url: /ghtjd1358/Ngv_Menu/tree/refs/heads/main
+                - generic [ref=e234]:
+                  - generic [ref=e235]:
+                    - generic "Jul 29, 2026, 12:46 PM GMT+9" [ref=e240]: 43 minutes ago
+                    - generic [ref=e241]:
+                      - img "Run duration" [ref=e242]
+                      - text: 36s
+                  - group [ref=e245]:
+                    - img "Show options" [ref=e247] [cursor=pointer]
+              - generic [ref=e250]:
+                - generic [ref=e251]:
+                  - 'link "completed successfully: Run 15 of Deploy Pages. feat: pre-fetch tomorrow menu on mount + increase calendar font size" [ref=e252] [cursor=pointer]':
+                    - /url: /ghtjd1358/Ngv_Menu/actions/runs/30416446741
+                    - img "completed successfully:" [ref=e254]
+                    - generic [ref=e256]: "feat: pre-fetch tomorrow menu on mount + increase calendar font size"
+                  - generic [ref=e257]:
+                    - text: "Deploy Pages #15:"
+                    - generic [ref=e258]:
+                      - text: Commit
+                      - link "506ca58" [ref=e259] [cursor=pointer]:
+                        - /url: /ghtjd1358/Ngv_Menu/commit/506ca58eaa83d83dc6e1c63f15fc6aa4be9fdd32
+                      - text: pushed by
+                      - link "ghtjd1358" [ref=e260] [cursor=pointer]:
+                        - /url: /ghtjd1358
+                - link "main" [ref=e262] [cursor=pointer]:
+                  - /url: /ghtjd1358/Ngv_Menu/tree/refs/heads/main
+                - generic [ref=e264]:
+                  - generic [ref=e265]:
+                    - generic "Jul 29, 2026, 11:17 AM GMT+9" [ref=e270]: Today at 11:17 AM
+                    - generic [ref=e271]:
+                      - img "Run duration" [ref=e272]
+                      - text: 44s
+                  - group [ref=e275]:
+                    - img "Show options" [ref=e277] [cursor=pointer]
+              - generic [ref=e280]:
+                - generic [ref=e281]:
+                  - 'link "completed successfully: Run 21 of Deploy Worker. fix: code review - mealTypeBuffer reset, dead code removal, cron log …" [ref=e282] [cursor=pointer]':
+                    - /url: /ghtjd1358/Ngv_Menu/actions/runs/30319031129
+                    - img "completed successfully:" [ref=e284]
+                    - generic [ref=e286]: "fix: code review - mealTypeBuffer reset, dead code removal, cron log …"
+                  - generic [ref=e287]:
+                    - text: "Deploy Worker #21:"
+                    - generic [ref=e288]:
+                      - text: Commit
+                      - link "be82f7f" [ref=e289] [cursor=pointer]:
+                        - /url: /ghtjd1358/Ngv_Menu/commit/be82f7f4518e61a1ba76d85a7b25fb536dc0bbc3
+                      - text: pushed by
+                      - link "ghtjd1358" [ref=e290] [cursor=pointer]:
+                        - /url: /ghtjd1358
+                - link "main" [ref=e292] [cursor=pointer]:
+                  - /url: /ghtjd1358/Ngv_Menu/tree/refs/heads/main
+                - generic [ref=e294]:
+                  - generic [ref=e295]:
+                    - generic "Jul 28, 2026, 10:01 AM GMT+9" [ref=e300]: Jul 28, 10:01 AM GMT+9
+                    - generic [ref=e301]:
+                      - img "Run duration" [ref=e302]
+                      - text: 28s
+                  - group [ref=e305]:
+                    - img "Show options" [ref=e307] [cursor=pointer]
+              - generic [ref=e310]:
+                - generic [ref=e311]:
+                  - 'link "completed successfully: Run 20 of Deploy Worker. feat: switch source to snumenu.gerosyab.net with HTMLRewriter parser …" [ref=e312] [cursor=pointer]':
+                    - /url: /ghtjd1358/Ngv_Menu/actions/runs/30318341316
+                    - img "completed successfully:" [ref=e314]
+                    - generic [ref=e316]: "feat: switch source to snumenu.gerosyab.net with HTMLRewriter parser …"
+                  - generic [ref=e317]:
+                    - text: "Deploy Worker #20:"
+                    - generic [ref=e318]:
+                      - text: Commit
+                      - link "7d74660" [ref=e319] [cursor=pointer]:
+                        - /url: /ghtjd1358/Ngv_Menu/commit/7d746600aa372d7c2531e02e0d39e9498d9f2f05
+                      - text: pushed by
+                      - link "ghtjd1358" [ref=e320] [cursor=pointer]:
+                        - /url: /ghtjd1358
+                - link "main" [ref=e322] [cursor=pointer]:
+                  - /url: /ghtjd1358/Ngv_Menu/tree/refs/heads/main
+                - generic [ref=e324]:
+                  - generic [ref=e325]:
+                    - generic "Jul 28, 2026, 9:47 AM GMT+9" [ref=e330]: Jul 28, 9:47 AM GMT+9
+                    - generic [ref=e331]:
+                      - img "Run duration" [ref=e332]
+                      - text: 30s
+                  - group [ref=e335]:
+                    - img "Show options" [ref=e337] [cursor=pointer]
+              - generic [ref=e340]:
+                - generic [ref=e341]:
+                  - 'link "completed successfully: Run 19 of Deploy Worker. debug: inspect snumenu.gerosyab.net HTML structure" [ref=e342] [cursor=pointer]':
+                    - /url: /ghtjd1358/Ngv_Menu/actions/runs/30318133199
+                    - img "completed successfully:" [ref=e344]
+                    - generic [ref=e346]: "debug: inspect snumenu.gerosyab.net HTML structure"
+                  - generic [ref=e347]:
+                    - text: "Deploy Worker #19:"
+                    - generic [ref=e348]:
+                      - text: Commit
+                      - link "71904ae" [ref=e349] [cursor=pointer]:
+                        - /url: /ghtjd1358/Ngv_Menu/commit/71904aee9b6d1a64973a07b97e6e4a0579118bcd
+                      - text: pushed by
+                      - link "ghtjd1358" [ref=e350] [cursor=pointer]:
+                        - /url: /ghtjd1358
+                - link "main" [ref=e352] [cursor=pointer]:
+                  - /url: /ghtjd1358/Ngv_Menu/tree/refs/heads/main
+                - generic [ref=e354]:
+                  - generic [ref=e355]:
+                    - generic "Jul 28, 2026, 9:43 AM GMT+9" [ref=e360]: Jul 28, 9:43 AM GMT+9
+                    - generic [ref=e361]:
+                      - img "Run duration" [ref=e362]
+                      - text: 24s
+                  - group [ref=e365]:
+                    - img "Show options" [ref=e367] [cursor=pointer]
+              - generic [ref=e370]:
+                - generic [ref=e371]:
+                  - 'link "completed successfully: Run 18 of Deploy Worker. fix: validate future date cache by KST date match to prevent stale data" [ref=e372] [cursor=pointer]':
+                    - /url: /ghtjd1358/Ngv_Menu/actions/runs/30316916760
+                    - img "completed successfully:" [ref=e374]
+                    - generic [ref=e376]: "fix: validate future date cache by KST date match to prevent stale data"
+                  - generic [ref=e377]:
+                    - text: "Deploy Worker #18:"
+                    - generic [ref=e378]:
+                      - text: Commit
+                      - link "b159ea1" [ref=e379] [cursor=pointer]:
+                        - /url: /ghtjd1358/Ngv_Menu/commit/b159ea17cef3553cb7584439cf10debcad80e9fa
+                      - text: pushed by
+                      - link "ghtjd1358" [ref=e380] [cursor=pointer]:
+                        - /url: /ghtjd1358
+                - link "main" [ref=e382] [cursor=pointer]:
+                  - /url: /ghtjd1358/Ngv_Menu/tree/refs/heads/main
+                - generic [ref=e384]:
+                  - generic [ref=e385]:
+                    - generic "Jul 28, 2026, 9:18 AM GMT+9" [ref=e390]: Jul 28, 9:18 AM GMT+9
+                    - generic [ref=e391]:
+                      - img "Run duration" [ref=e392]
+                      - text: 27s
+                  - group [ref=e395]:
+                    - img "Show options" [ref=e397] [cursor=pointer]
+              - generic [ref=e400]:
+                - generic [ref=e401]:
+                  - 'link "completed successfully: Run 14 of Deploy Pages. fix: full-width calendar with larger cells for menu readability" [ref=e402] [cursor=pointer]':
+                    - /url: /ghtjd1358/Ngv_Menu/actions/runs/30316843385
+                    - img "completed successfully:" [ref=e404]
+                    - generic [ref=e406]: "fix: full-width calendar with larger cells for menu readability"
+                  - generic [ref=e407]:
+                    - text: "Deploy Pages #14:"
+                    - generic [ref=e408]:
+                      - text: Commit
+                      - link "53bea12" [ref=e409] [cursor=pointer]:
+                        - /url: /ghtjd1358/Ngv_Menu/commit/53bea12d374308799f0c1640ba850e5832441481
+                      - text: pushed by
+                      - link "ghtjd1358" [ref=e410] [cursor=pointer]:
+                        - /url: /ghtjd1358
+                - link "main" [ref=e412] [cursor=pointer]:
+                  - /url: /ghtjd1358/Ngv_Menu/tree/refs/heads/main
+                - generic [ref=e414]:
+                  - generic [ref=e415]:
+                    - generic "Jul 28, 2026, 9:16 AM GMT+9" [ref=e420]: Jul 28, 9:16 AM GMT+9
+                    - generic [ref=e421]:
+                      - img "Run duration" [ref=e422]
+                      - text: 37s
+                  - group [ref=e425]:
+                    - img "Show options" [ref=e427] [cursor=pointer]
+              - generic [ref=e430]:
+                - generic [ref=e431]:
+                  - 'link "completed successfully: Run 13 of Deploy Pages. feat: load all cached months data on startup for full calendar view" [ref=e432] [cursor=pointer]':
+                    - /url: /ghtjd1358/Ngv_Menu/actions/runs/30316814452
+                    - img "completed successfully:" [ref=e434]
+                    - generic [ref=e436]: "feat: load all cached months data on startup for full calendar view"
+                  - generic [ref=e437]:
+                    - text: "Deploy Pages #13:"
+                    - generic [ref=e438]:
+                      - text: Commit
+                      - link "1c39d29" [ref=e439] [cursor=pointer]:
+                        - /url: /ghtjd1358/Ngv_Menu/commit/1c39d29847b56a803a219aa0658aff8ec07ae815
+                      - text: pushed by
+                      - link "ghtjd1358" [ref=e440] [cursor=pointer]:
+                        - /url: /ghtjd1358
+                - link "main" [ref=e442] [cursor=pointer]:
+                  - /url: /ghtjd1358/Ngv_Menu/tree/refs/heads/main
+                - generic [ref=e444]:
+                  - generic [ref=e445]:
+                    - generic "Jul 28, 2026, 9:16 AM GMT+9" [ref=e450]: Jul 28, 9:16 AM GMT+9
+                    - generic [ref=e451]:
+                      - img "Run duration" [ref=e452]
+                      - text: 38s
+                  - group [ref=e455]:
+                    - img "Show options" [ref=e457] [cursor=pointer]
+              - generic [ref=e460]:
+                - generic [ref=e461]:
+                  - 'link "completed successfully: Run 12 of Deploy Pages. feat: show menu items in calendar day cells + /api/menu/month endpoint" [ref=e462] [cursor=pointer]':
+                    - /url: /ghtjd1358/Ngv_Menu/actions/runs/30316562898
+                    - img "completed successfully:" [ref=e464]
+                    - generic [ref=e466]: "feat: show menu items in calendar day cells + /api/menu/month endpoint"
+                  - generic [ref=e467]:
+                    - text: "Deploy Pages #12:"
+                    - generic [ref=e468]:
+                      - text: Commit
+                      - link "9979a0e" [ref=e469] [cursor=pointer]:
+                        - /url: /ghtjd1358/Ngv_Menu/commit/9979a0ec62b3460b58e2e36047a5509bae53582b
+                      - text: pushed by
+                      - link "ghtjd1358" [ref=e470] [cursor=pointer]:
+                        - /url: /ghtjd1358
+                - link "main" [ref=e472] [cursor=pointer]:
+                  - /url: /ghtjd1358/Ngv_Menu/tree/refs/heads/main
+                - generic [ref=e474]:
+                  - generic [ref=e475]:
+                    - generic "Jul 28, 2026, 9:11 AM GMT+9" [ref=e480]: Jul 28, 9:11 AM GMT+9
+                    - generic [ref=e481]:
+                      - img "Run duration" [ref=e482]
+                      - text: 40s
+                  - group [ref=e485]:
+                    - img "Show options" [ref=e487] [cursor=pointer]
+              - generic [ref=e490]:
+                - generic [ref=e491]:
+                  - 'link "completed successfully: Run 17 of Deploy Worker. fix: stale today cache bug + remove fake tomorrow fetch" [ref=e492] [cursor=pointer]':
+                    - /url: /ghtjd1358/Ngv_Menu/actions/runs/30316430023
+                    - img "completed successfully:" [ref=e494]
+                    - generic [ref=e496]: "fix: stale today cache bug + remove fake tomorrow fetch"
+                  - generic [ref=e497]:
+                    - text: "Deploy Worker #17:"
+                    - generic [ref=e498]:
+                      - text: Commit
+                      - link "d094cc9" [ref=e499] [cursor=pointer]:
+                        - /url: /ghtjd1358/Ngv_Menu/commit/d094cc90c00e76050defb09b275b5000726c055b
+                      - text: pushed by
+                      - link "ghtjd1358" [ref=e500] [cursor=pointer]:
+                        - /url: /ghtjd1358
+                - link "main" [ref=e502] [cursor=pointer]:
+                  - /url: /ghtjd1358/Ngv_Menu/tree/refs/heads/main
+                - generic [ref=e504]:
+                  - generic [ref=e505]:
+                    - generic "Jul 28, 2026, 9:08 AM GMT+9" [ref=e510]: Jul 28, 9:08 AM GMT+9
+                    - generic [ref=e511]:
+                      - img "Run duration" [ref=e512]
+                      - text: 18s
+                  - group [ref=e515]:
+                    - img "Show options" [ref=e517] [cursor=pointer]
+              - generic [ref=e520]:
+                - generic [ref=e521]:
+                  - 'link "completed successfully: Run 11 of Deploy Pages. fix: reorder layout - menu top, buttons middle, calendar bottom" [ref=e522] [cursor=pointer]':
+                    - /url: /ghtjd1358/Ngv_Menu/actions/runs/30316335052
+                    - img "completed successfully:" [ref=e524]
+                    - generic [ref=e526]: "fix: reorder layout - menu top, buttons middle, calendar bottom"
+                  - generic [ref=e527]:
+                    - text: "Deploy Pages #11:"
+                    - generic [ref=e528]:
+                      - text: Commit
+                      - link "3babfc8" [ref=e529] [cursor=pointer]:
+                        - /url: /ghtjd1358/Ngv_Menu/commit/3babfc8608c821faeb404ed0d5e11a9641413d47
+                      - text: pushed by
+                      - link "ghtjd1358" [ref=e530] [cursor=pointer]:
+                        - /url: /ghtjd1358
+                - link "main" [ref=e532] [cursor=pointer]:
+                  - /url: /ghtjd1358/Ngv_Menu/tree/refs/heads/main
+                - generic [ref=e534]:
+                  - generic [ref=e535]:
+                    - generic "Jul 28, 2026, 9:07 AM GMT+9" [ref=e540]: Jul 28, 9:07 AM GMT+9
+                    - generic [ref=e541]:
+                      - img "Run duration" [ref=e542]
+                      - text: 43s
+                  - group [ref=e545]:
+                    - img "Show options" [ref=e547] [cursor=pointer]
+              - generic [ref=e550]:
+                - generic [ref=e551]:
+                  - 'link "completed successfully: Run 10 of Deploy Pages. feat: replace custom calendar with react-datepicker + date-fns" [ref=e552] [cursor=pointer]':
+                    - /url: /ghtjd1358/Ngv_Menu/actions/runs/30315953150
+                    - img "completed successfully:" [ref=e554]
+                    - generic [ref=e556]: "feat: replace custom calendar with react-datepicker + date-fns"
+                  - generic [ref=e557]:
+                    - text: "Deploy Pages #10:"
+                    - generic [ref=e558]:
+                      - text: Commit
+                      - link "8ccb032" [ref=e559] [cursor=pointer]:
+                        - /url: /ghtjd1358/Ngv_Menu/commit/8ccb032274ee36ae8760ae474a5cdae0ecd1357a
+                      - text: pushed by
+                      - link "ghtjd1358" [ref=e560] [cursor=pointer]:
+                        - /url: /ghtjd1358
+                - link "main" [ref=e562] [cursor=pointer]:
+                  - /url: /ghtjd1358/Ngv_Menu/tree/refs/heads/main
+                - generic [ref=e564]:
+                  - generic [ref=e565]:
+                    - generic "Jul 28, 2026, 9:00 AM GMT+9" [ref=e570]: Jul 28, 9:00 AM GMT+9
+                    - generic [ref=e571]:
+                      - img "Run duration" [ref=e572]
+                      - text: 40s
+                  - group [ref=e575]:
+                    - img "Show options" [ref=e577] [cursor=pointer]
+              - generic [ref=e580]:
+                - generic [ref=e581]:
+                  - 'link "completed successfully: Run 9 of Deploy Pages. feat: calendar with data availability highlights + /api/menu/dates en…" [ref=e582] [cursor=pointer]':
+                    - /url: /ghtjd1358/Ngv_Menu/actions/runs/30315770256
+                    - img "completed successfully:" [ref=e584]
+                    - generic [ref=e586]: "feat: calendar with data availability highlights + /api/menu/dates en…"
+                  - generic [ref=e587]:
+                    - text: "Deploy Pages #9:"
+                    - generic [ref=e588]:
+                      - text: Commit
+                      - link "3c9548e" [ref=e589] [cursor=pointer]:
+                        - /url: /ghtjd1358/Ngv_Menu/commit/3c9548ee98e820992d620a24ef4f7891032ceb8c
+                      - text: pushed by
+                      - link "ghtjd1358" [ref=e590] [cursor=pointer]:
+                        - /url: /ghtjd1358
+                - link "main" [ref=e592] [cursor=pointer]:
+                  - /url: /ghtjd1358/Ngv_Menu/tree/refs/heads/main
+                - generic [ref=e594]:
+                  - generic [ref=e595]:
+                    - generic "Jul 28, 2026, 8:56 AM GMT+9" [ref=e600]: Jul 28, 8:56 AM GMT+9
+                    - generic [ref=e601]:
+                      - img "Run duration" [ref=e602]
+                      - text: 34s
+                  - group [ref=e605]:
+                    - img "Show options" [ref=e607] [cursor=pointer]
+              - generic [ref=e610]:
+                - generic [ref=e611]:
+                  - 'link "completed successfully: Run 16 of Deploy Worker. feat: calendar with data availability highlights + /api/menu/dates en…" [ref=e612] [cursor=pointer]':
+                    - /url: /ghtjd1358/Ngv_Menu/actions/runs/30315770227
+                    - img "completed successfully:" [ref=e614]
+                    - generic [ref=e616]: "feat: calendar with data availability highlights + /api/menu/dates en…"
+                  - generic [ref=e617]:
+                    - text: "Deploy Worker #16:"
+                    - generic [ref=e618]:
+                      - text: Commit
+                      - link "3c9548e" [ref=e619] [cursor=pointer]:
+                        - /url: /ghtjd1358/Ngv_Menu/commit/3c9548ee98e820992d620a24ef4f7891032ceb8c
+                      - text: pushed by
+                      - link "ghtjd1358" [ref=e620] [cursor=pointer]:
+                        - /url: /ghtjd1358
+                - link "main" [ref=e622] [cursor=pointer]:
+                  - /url: /ghtjd1358/Ngv_Menu/tree/refs/heads/main
+                - generic [ref=e624]:
+                  - generic [ref=e625]:
+                    - generic "Jul 28, 2026, 8:56 AM GMT+9" [ref=e630]: Jul 28, 8:56 AM GMT+9
+                    - generic [ref=e631]:
+                      - img "Run duration" [ref=e632]
+                      - text: 28s
+                  - group [ref=e635]:
+                    - img "Show options" [ref=e637] [cursor=pointer]
+              - generic [ref=e640]:
+                - generic [ref=e641]:
+                  - 'link "completed successfully: Run 15 of Deploy Worker. debug: find form wrapping date input" [ref=e642] [cursor=pointer]':
+                    - /url: /ghtjd1358/Ngv_Menu/actions/runs/30315642200
+                    - img "completed successfully:" [ref=e644]
+                    - generic [ref=e646]: "debug: find form wrapping date input"
+                  - generic [ref=e647]:
+                    - text: "Deploy Worker #15:"
+                    - generic [ref=e648]:
+                      - text: Commit
+                      - link "c4db7a5" [ref=e649] [cursor=pointer]:
+                        - /url: /ghtjd1358/Ngv_Menu/commit/c4db7a5c2bf66ecbed83918f58cb5b740d16609b
+                      - text: pushed by
+                      - link "ghtjd1358" [ref=e650] [cursor=pointer]:
+                        - /url: /ghtjd1358
+                - link "main" [ref=e652] [cursor=pointer]:
+                  - /url: /ghtjd1358/Ngv_Menu/tree/refs/heads/main
+                - generic [ref=e654]:
+                  - generic [ref=e655]:
+                    - generic "Jul 28, 2026, 8:54 AM GMT+9" [ref=e660]: Jul 28, 8:54 AM GMT+9
+                    - generic [ref=e661]:
+                      - img "Run duration" [ref=e662]
+                      - text: 17s
+                  - group [ref=e665]:
+                    - img "Show options" [ref=e667] [cursor=pointer]
+              - generic [ref=e670]:
+                - generic [ref=e671]:
+                  - 'link "completed successfully: Run 14 of Deploy Worker. fix: use GET ?date= instead of POST for date menu fetch" [ref=e672] [cursor=pointer]':
+                    - /url: /ghtjd1358/Ngv_Menu/actions/runs/30315413902
+                    - img "completed successfully:" [ref=e674]
+                    - generic [ref=e676]: "fix: use GET ?date= instead of POST for date menu fetch"
+                  - generic [ref=e677]:
+                    - text: "Deploy Worker #14:"
+                    - generic [ref=e678]:
+                      - text: Commit
+                      - link "56b720a" [ref=e679] [cursor=pointer]:
+                        - /url: /ghtjd1358/Ngv_Menu/commit/56b720a9b1fffab3c4eeaed92905aa81b429f8ec
+                      - text: pushed by
+                      - link "ghtjd1358" [ref=e680] [cursor=pointer]:
+                        - /url: /ghtjd1358
+                - link "main" [ref=e682] [cursor=pointer]:
+                  - /url: /ghtjd1358/Ngv_Menu/tree/refs/heads/main
+                - generic [ref=e684]:
+                  - generic [ref=e685]:
+                    - generic "Jul 28, 2026, 8:50 AM GMT+9" [ref=e690]: Jul 28, 8:50 AM GMT+9
+                    - generic [ref=e691]:
+                      - img "Run duration" [ref=e692]
+                      - text: 27s
+                  - group [ref=e695]:
+                    - img "Show options" [ref=e697] [cursor=pointer]
+              - generic [ref=e700]:
+                - generic [ref=e701]:
+                  - 'link "completed successfully: Run 13 of Deploy Worker. debug: add form inspector endpoint" [ref=e702] [cursor=pointer]':
+                    - /url: /ghtjd1358/Ngv_Menu/actions/runs/30315325934
+                    - img "completed successfully:" [ref=e704]
+                    - generic [ref=e706]: "debug: add form inspector endpoint"
+                  - generic [ref=e707]:
+                    - text: "Deploy Worker #13:"
+                    - generic [ref=e708]:
+                      - text: Commit
+                      - link "9809023" [ref=e709] [cursor=pointer]:
+                        - /url: /ghtjd1358/Ngv_Menu/commit/9809023fbdeeb80481f5e4a289866426bdc288dc
+                      - text: pushed by
+                      - link "ghtjd1358" [ref=e710] [cursor=pointer]:
+                        - /url: /ghtjd1358
+                - link "main" [ref=e712] [cursor=pointer]:
+                  - /url: /ghtjd1358/Ngv_Menu/tree/refs/heads/main
+                - generic [ref=e714]:
+                  - generic [ref=e715]:
+                    - generic "Jul 28, 2026, 8:48 AM GMT+9" [ref=e720]: Jul 28, 8:48 AM GMT+9
+                    - generic [ref=e721]:
+                      - img "Run duration" [ref=e722]
+                      - text: 26s
+                  - group [ref=e725]:
+                    - img "Show options" [ref=e727] [cursor=pointer]
+              - generic [ref=e730]:
+                - generic [ref=e731]:
+                  - 'link "completed successfully: Run 12 of Deploy Worker. fix: simplify cron to daily 08:00 KST, every day" [ref=e732] [cursor=pointer]':
+                    - /url: /ghtjd1358/Ngv_Menu/actions/runs/30315138252
+                    - img "completed successfully:" [ref=e734]
+                    - generic [ref=e736]: "fix: simplify cron to daily 08:00 KST, every day"
+                  - generic [ref=e737]:
+                    - text: "Deploy Worker #12:"
+                    - generic [ref=e738]:
+                      - text: Commit
+                      - link "969b990" [ref=e739] [cursor=pointer]:
+                        - /url: /ghtjd1358/Ngv_Menu/commit/969b9900cf9f98c47c1f936ceb32db2feb49884d
+                      - text: pushed by
+                      - link "ghtjd1358" [ref=e740] [cursor=pointer]:
+                        - /url: /ghtjd1358
+                - link "main" [ref=e742] [cursor=pointer]:
+                  - /url: /ghtjd1358/Ngv_Menu/tree/refs/heads/main
+                - generic [ref=e744]:
+                  - generic [ref=e745]:
+                    - generic "Jul 28, 2026, 8:45 AM GMT+9" [ref=e750]: Jul 28, 8:45 AM GMT+9
+                    - generic [ref=e751]:
+                      - img "Run duration" [ref=e752]
+                      - text: 26s
+                  - group [ref=e755]:
+                    - img "Show options" [ref=e757] [cursor=pointer]
+              - generic [ref=e760]:
+                - generic [ref=e761]:
+                  - 'link "failed: Run 11 of Deploy Worker. fix: cron range syntax -> comma list for Cloudflare" [ref=e762] [cursor=pointer]':
+                    - /url: /ghtjd1358/Ngv_Menu/actions/runs/30315076067
+                    - img "failed:" [ref=e764]
+                    - generic [ref=e766]: "fix: cron range syntax -> comma list for Cloudflare"
+                  - generic [ref=e767]:
+                    - text: "Deploy Worker #11:"
+                    - generic [ref=e768]:
+                      - text: Commit
+                      - link "bef5878" [ref=e769] [cursor=pointer]:
+                        - /url: /ghtjd1358/Ngv_Menu/commit/bef5878ed1cdec850232113d53931e1730110569
+                      - text: pushed by
+                      - link "ghtjd1358" [ref=e770] [cursor=pointer]:
+                        - /url: /ghtjd1358
+                - link "main" [ref=e772] [cursor=pointer]:
+                  - /url: /ghtjd1358/Ngv_Menu/tree/refs/heads/main
+                - generic [ref=e774]:
+                  - generic [ref=e775]:
+                    - generic "Jul 28, 2026, 8:43 AM GMT+9" [ref=e780]: Jul 28, 8:43 AM GMT+9
+                    - generic [ref=e781]:
+                      - img "Run duration" [ref=e782]
+                      - text: 18s
+                  - group [ref=e785]:
+                    - img "Show options" [ref=e787] [cursor=pointer]
+              - generic [ref=e790]:
+                - generic [ref=e791]:
+                  - 'link "failed: Run 10 of Deploy Worker. chore: cron once daily at 08:00 KST on weekdays" [ref=e792] [cursor=pointer]':
+                    - /url: /ghtjd1358/Ngv_Menu/actions/runs/30314835903
+                    - img "failed:" [ref=e794]
+                    - generic [ref=e796]: "chore: cron once daily at 08:00 KST on weekdays"
+                  - generic [ref=e797]:
+                    - text: "Deploy Worker #10:"
+                    - generic [ref=e798]:
+                      - text: Commit
+                      - link "acf650e" [ref=e799] [cursor=pointer]:
+                        - /url: /ghtjd1358/Ngv_Menu/commit/acf650e5968f8ff3564ec8f1f5ce093850dceecd
+                      - text: pushed by
+                      - link "ghtjd1358" [ref=e800] [cursor=pointer]:
+                        - /url: /ghtjd1358
+                - link "main" [ref=e802] [cursor=pointer]:
+                  - /url: /ghtjd1358/Ngv_Menu/tree/refs/heads/main
+                - generic [ref=e804]:
+                  - generic [ref=e805]:
+                    - generic "Jul 28, 2026, 8:39 AM GMT+9" [ref=e810]: Jul 28, 8:39 AM GMT+9
+                    - generic [ref=e811]:
+                      - img "Run duration" [ref=e812]
+                      - text: 24s
+                  - group [ref=e815]:
+                    - img "Show options" [ref=e817] [cursor=pointer]
+              - generic [ref=e820]:
+                - generic [ref=e821]:
+                  - 'link "failed: Run 9 of Deploy Worker. chore: reduce cron from every minute to 6x/day on weekdays" [ref=e822] [cursor=pointer]':
+                    - /url: /ghtjd1358/Ngv_Menu/actions/runs/30314774070
+                    - img "failed:" [ref=e824]
+                    - generic [ref=e826]: "chore: reduce cron from every minute to 6x/day on weekdays"
+                  - generic [ref=e827]:
+                    - text: "Deploy Worker #9:"
+                    - generic [ref=e828]:
+                      - text: Commit
+                      - link "7179825" [ref=e829] [cursor=pointer]:
+                        - /url: /ghtjd1358/Ngv_Menu/commit/71798256868cd0fad4e3ac39ae936eb52893596f
+                      - text: pushed by
+                      - link "ghtjd1358" [ref=e830] [cursor=pointer]:
+                        - /url: /ghtjd1358
+                - link "main" [ref=e832] [cursor=pointer]:
+                  - /url: /ghtjd1358/Ngv_Menu/tree/refs/heads/main
+                - generic [ref=e834]:
+                  - generic [ref=e835]:
+                    - generic "Jul 28, 2026, 8:38 AM GMT+9" [ref=e840]: Jul 28, 8:38 AM GMT+9
+                    - generic [ref=e841]:
+                      - img "Run duration" [ref=e842]
+                      - text: 30s
+                  - group [ref=e845]:
+                    - img "Show options" [ref=e847] [cursor=pointer]
+              - generic [ref=e850]:
+                - generic [ref=e851]:
+                  - 'link "completed successfully: Run 8 of Deploy Pages. fix: proper no-data handling for past/future dates" [ref=e852] [cursor=pointer]':
+                    - /url: /ghtjd1358/Ngv_Menu/actions/runs/30314641045
+                    - img "completed successfully:" [ref=e854]
+                    - generic [ref=e856]: "fix: proper no-data handling for past/future dates"
+                  - generic [ref=e857]:
+                    - text: "Deploy Pages #8:"
+                    - generic [ref=e858]:
+                      - text: Commit
+                      - link "21ed62a" [ref=e859] [cursor=pointer]:
+                        - /url: /ghtjd1358/Ngv_Menu/commit/21ed62a7093d665d2dd2503716a7daa28e89f0c0
+                      - text: pushed by
+                      - link "ghtjd1358" [ref=e860] [cursor=pointer]:
+                        - /url: /ghtjd1358
+                - link "main" [ref=e862] [cursor=pointer]:
+                  - /url: /ghtjd1358/Ngv_Menu/tree/refs/heads/main
+                - generic [ref=e864]:
+                  - generic [ref=e865]:
+                    - generic "Jul 28, 2026, 8:35 AM GMT+9" [ref=e870]: Jul 28, 8:35 AM GMT+9
+                    - generic [ref=e871]:
+                      - img "Run duration" [ref=e872]
+                      - text: 35s
+                  - group [ref=e875]:
+                    - img "Show options" [ref=e877] [cursor=pointer]
+              - generic [ref=e880]:
+                - generic [ref=e881]:
+                  - 'link "completed successfully: Run 8 of Deploy Worker. fix: proper no-data handling for past/future dates" [ref=e882] [cursor=pointer]':
+                    - /url: /ghtjd1358/Ngv_Menu/actions/runs/30314641026
+                    - img "completed successfully:" [ref=e884]
+                    - generic [ref=e886]: "fix: proper no-data handling for past/future dates"
+                  - generic [ref=e887]:
+                    - text: "Deploy Worker #8:"
+                    - generic [ref=e888]:
+                      - text: Commit
+                      - link "21ed62a" [ref=e889] [cursor=pointer]:
+                        - /url: /ghtjd1358/Ngv_Menu/commit/21ed62a7093d665d2dd2503716a7daa28e89f0c0
+                      - text: pushed by
+                      - link "ghtjd1358" [ref=e890] [cursor=pointer]:
+                        - /url: /ghtjd1358
+                - link "main" [ref=e892] [cursor=pointer]:
+                  - /url: /ghtjd1358/Ngv_Menu/tree/refs/heads/main
+                - generic [ref=e894]:
+                  - generic [ref=e895]:
+                    - generic "Jul 28, 2026, 8:35 AM GMT+9" [ref=e900]: Jul 28, 8:35 AM GMT+9
+                    - generic [ref=e901]:
+                      - img "Run duration" [ref=e902]
+                      - text: 21s
+                  - group [ref=e905]:
+                    - img "Show options" [ref=e907] [cursor=pointer]
+              - generic [ref=e910]:
+                - generic [ref=e911]:
+                  - 'link "completed successfully: Run 7 of Deploy Worker. feat: fetch tomorrow''s menu via date form on cron" [ref=e912] [cursor=pointer]':
+                    - /url: /ghtjd1358/Ngv_Menu/actions/runs/30314559829
+                    - img "completed successfully:" [ref=e914]
+                    - generic [ref=e916]: "feat: fetch tomorrow's menu via date form on cron"
+                  - generic [ref=e917]:
+                    - text: "Deploy Worker #7:"
+                    - generic [ref=e918]:
+                      - text: Commit
+                      - link "9ebf0cd" [ref=e919] [cursor=pointer]:
+                        - /url: /ghtjd1358/Ngv_Menu/commit/9ebf0cd30506c3bc3564674e1967d4e02e33089a
+                      - text: pushed by
+                      - link "ghtjd1358" [ref=e920] [cursor=pointer]:
+                        - /url: /ghtjd1358
+                - link "main" [ref=e922] [cursor=pointer]:
+                  - /url: /ghtjd1358/Ngv_Menu/tree/refs/heads/main
+                - generic [ref=e924]:
+                  - generic [ref=e925]:
+                    - generic "Jul 28, 2026, 8:34 AM GMT+9" [ref=e930]: Jul 28, 8:34 AM GMT+9
+                    - generic [ref=e931]:
+                      - img "Run duration" [ref=e932]
+                      - text: 22s
+                  - group [ref=e935]:
+                    - img "Show options" [ref=e937] [cursor=pointer]
+          - navigation "Pagination" [ref=e941]:
+            - generic "Previous page" [ref=e942]: Previous
+            - emphasis [ref=e943] [cursor=pointer]: "1"
+            - link "Page 2" [ref=e944] [cursor=pointer]:
+              - /url: /ghtjd1358/Ngv_Menu/actions?page=2
+              - text: "2"
+            - link "Next page" [ref=e945] [cursor=pointer]:
+              - /url: /ghtjd1358/Ngv_Menu/actions?page=2
+              - text: Next

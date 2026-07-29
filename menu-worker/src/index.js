@@ -1,9 +1,27 @@
 const SOURCE_URL = "https://snumenu.gerosyab.net/ko/menus";
 const RES_CODES = "09,07";
-const KV_KEY_TODAY = "menu:today";
 const KV_KEY_FAVORITES_PREFIX = "favorites:";
 const kvByDate = (date) => `menu:${date}`;
+const KV_TTL_MENU = 60 * 60 * 24 * 30;       // 30일 (월간 달력 지원)
+const KV_TTL_FAVORITES = 60 * 60 * 24 * 365;
 
+// ── 입력 검증 ────────────────────────────────────────────────────────────────
+const DATE_ISO_RE = /^\d{4}-\d{2}-\d{2}$/;
+const ANON_ID_RE = /^[0-9a-f\-]{8,36}$/i;
+const MENU_ID_MAX_LEN = 64;
+
+function isValidDate(str) {
+	if (!str || !DATE_ISO_RE.test(str)) return false;
+	const d = new Date(str + "T00:00:00Z");
+	return !isNaN(d.getTime());
+}
+
+function isWithinDateRange(targetDate, today, maxDays = 365) {
+	const diff = Math.abs(
+		(new Date(targetDate + "T00:00:00Z") - new Date(today + "T00:00:00Z")) / 86400000
+	);
+	return diff <= maxDays;
+}
 
 // ── Date helpers ─────────────────────────────────────────────────────────────
 function todayISO_KST() {
@@ -11,12 +29,6 @@ function todayISO_KST() {
 		timeZone: "Asia/Seoul",
 		year: "numeric", month: "2-digit", day: "2-digit",
 	}).format(new Date());
-}
-
-function addDaysISO(isoDate, days) {
-	const [y, m, d] = isoDate.split("-").map(Number);
-	const dt = new Date(Date.UTC(y, m - 1, d + days));
-	return dt.toISOString().slice(0, 10);
 }
 
 // ── Menu fetch via HTMLRewriter ───────────────────────────────────────────────
@@ -50,7 +62,7 @@ async function buildMenuJson(date = null) {
 				if (code && data[code]) {
 					currentRes = code;
 					currentMealType = "";
-					mealTypeBuffer = ""; // 이전 식당의 meal type 버퍼 초기화
+					mealTypeBuffer = "";
 				}
 			}
 		})
@@ -60,15 +72,11 @@ async function buildMenuJson(date = null) {
 		})
 		.on('.menu a.modal-link', {
 			element(el) {
-				// .meal-type 텍스트가 쌓인 것을 여기서 확인
 				const mt = mealTypeBuffer.trim();
 				if (mt) currentMealType = mt;
-
 				if (currentMealType !== "점심" || !currentRes) return;
 				const menu = el.getAttribute('data-menu');
-				if (menu && data[currentRes]) {
-					data[currentRes].lunch.push(menu.trim());
-				}
+				if (menu && data[currentRes]) data[currentRes].lunch.push(menu.trim());
 			}
 		})
 		.transform(fetchRes);
@@ -76,30 +84,20 @@ async function buildMenuJson(date = null) {
 	await transformed.text();
 
 	const restaurants = Object.values(data);
+	const hasData = restaurants.some(r => r.lunch.length > 0);
 
-	if (restaurants.every(r => r.lunch.length === 0)) {
-		console.warn(`No lunch data for ${targetDate} from snumenu`);
-	}
+	if (!hasData) console.warn(`No lunch data for ${targetDate} from snumenu`);
 
 	return {
 		date: targetDate,
 		sourceUrl: url,
 		updatedAt: new Date().toISOString(),
+		hasData,
 		restaurants,
 	};
 }
 
 // ── KV helpers ───────────────────────────────────────────────────────────────
-async function getCachedToday(env) {
-	const raw = await env.MENU_KV.get(KV_KEY_TODAY);
-	if (!raw) return null;
-	try { return JSON.parse(raw); } catch { return null; }
-}
-
-async function setCachedToday(env, obj) {
-	await env.MENU_KV.put(KV_KEY_TODAY, JSON.stringify(obj), { expirationTtl: 60 * 60 * 24 });
-}
-
 async function getMenuByDate(env, date) {
 	const raw = await env.MENU_KV.get(kvByDate(date));
 	if (!raw) return null;
@@ -107,7 +105,7 @@ async function getMenuByDate(env, date) {
 }
 
 async function setMenuByDate(env, obj) {
-	await env.MENU_KV.put(kvByDate(obj.date), JSON.stringify(obj), { expirationTtl: 60 * 60 * 24 * 7 });
+	await env.MENU_KV.put(kvByDate(obj.date), JSON.stringify(obj), { expirationTtl: KV_TTL_MENU });
 }
 
 // ── Favorites helpers ────────────────────────────────────────────────────────
@@ -124,12 +122,14 @@ async function setUserFavorites(env, anonymousId, favSet) {
 	await env.MENU_KV.put(
 		`${KV_KEY_FAVORITES_PREFIX}${anonymousId}`,
 		JSON.stringify(Array.from(favSet)),
-		{ expirationTtl: 60 * 60 * 24 * 365 }
+		{ expirationTtl: KV_TTL_FAVORITES }
 	);
 }
 
 function extractAnonymousId(req) {
-	return req.headers.get("X-Anonymous-Id") || null;
+	const id = req.headers.get("X-Anonymous-Id");
+	if (!id || !ANON_ID_RE.test(id)) return null;
+	return id;
 }
 
 // ── Response helpers ─────────────────────────────────────────────────────────
@@ -169,7 +169,9 @@ export default {
 		if (url.pathname === "/api/menu/month") {
 			const year = url.searchParams.get("year");
 			const month = url.searchParams.get("month")?.padStart(2, "0");
-			if (!year || !month) return jsonResponse({ error: "year and month required" }, 400);
+			if (!year || !month || !/^\d{4}$/.test(year) || !/^\d{2}$/.test(month)) {
+				return jsonResponse({ error: "year (YYYY) and month (1-12) required" }, 400);
+			}
 			try {
 				const prefix = `menu:${year}-${month}-`;
 				const list = await env.MENU_KV.list({ prefix });
@@ -196,7 +198,7 @@ export default {
 					.map(k => k.name.replace("menu:", ""))
 					.filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d))
 					.sort();
-				return jsonResponse({ dates });
+				return jsonResponse({ dates, truncated: !list.list_complete });
 			} catch (e) {
 				return jsonResponse({ error: e?.message || "list failed" }, 500);
 			}
@@ -206,31 +208,39 @@ export default {
 		if (url.pathname === "/api/menu/today") {
 			const today = todayISO_KST();
 			const dateParam = url.searchParams.get("date");
+
+			// 날짜 형식 및 범위 검증
+			if (dateParam) {
+				if (!isValidDate(dateParam)) {
+					return jsonResponse({ error: "Invalid date format. Use YYYY-MM-DD" }, 400);
+				}
+				if (!isWithinDateRange(dateParam, today)) {
+					return jsonResponse({ error: "Date out of range (±365 days)" }, 400);
+				}
+			}
+
 			const targetDate = dateParam || today;
 			const fresh = url.searchParams.get("fresh") === "1";
 			const isFuture = targetDate > today;
 
-			// 미래 날짜: updatedAt이 실제로 해당 날짜(KST)에 저장된 데이터만 반환
+			// 미래 날짜: 캐시 확인 후 live fetch
 			if (isFuture) {
 				const cached = await getMenuByDate(env, targetDate);
 				if (cached?.updatedAt) {
-					const kstDate = new Date(new Date(cached.updatedAt).getTime() + 9 * 60 * 60 * 1000)
-						.toISOString().slice(0, 10);
+					const kstDate = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Seoul" })
+						.format(new Date(cached.updatedAt));
 					if (kstDate === targetDate) return jsonResponse(cached);
 				}
-				// snumenu는 미래 날짜도 지원 — 직접 fetch 시도
 				try {
 					const data = await buildMenuJson(targetDate);
-					if (data.restaurants.some(r => r.lunch.length > 0)) {
-						ctx.waitUntil(setMenuByDate(env, data));
-						return jsonResponse(data);
-					}
+					if (data.hasData) ctx.waitUntil(setMenuByDate(env, data));
+					return jsonResponse(data);
 				} catch (e) {
 					console.warn("Future date fetch failed:", e?.message);
 				}
 				return jsonResponse({
 					date: targetDate, sourceUrl: SOURCE_URL, updatedAt: null,
-					restaurants: [], note: "해당 날짜의 메뉴가 아직 없습니다.",
+					hasData: false, restaurants: [], note: "해당 날짜의 메뉴가 아직 없습니다.",
 				});
 			}
 
@@ -240,24 +250,20 @@ export default {
 				if (byDate) return jsonResponse(byDate);
 				return jsonResponse({
 					date: targetDate, sourceUrl: SOURCE_URL, updatedAt: null,
-					restaurants: [], note: "해당 날짜의 메뉴 데이터가 없습니다.",
+					hasData: false, restaurants: [], note: "해당 날짜의 메뉴 데이터가 없습니다.",
 				});
 			}
 
-			// 오늘: 날짜가 일치하는 캐시만 사용
+			// 오늘: 캐시 우선
 			if (!fresh) {
 				const byDate = await getMenuByDate(env, today);
 				if (byDate) return jsonResponse(byDate);
-				const cached = await getCachedToday(env);
-				if (cached && cached.date === today) return jsonResponse(cached);
 			}
 
 			try {
 				const data = await buildMenuJson();
-				ctx.waitUntil(Promise.all([
-					setCachedToday(env, data),
-					setMenuByDate(env, data),
-				]));
+				// 데이터가 있을 때만 캐시 저장 (빈 결과가 7일 고착되는 문제 방지)
+				if (data.hasData) ctx.waitUntil(setMenuByDate(env, data));
 				return jsonResponse(data);
 			} catch (e) {
 				return jsonResponse({ error: e?.message || "menu build failed", sourceUrl: SOURCE_URL }, 500);
@@ -267,7 +273,7 @@ export default {
 		// GET /api/favorites
 		if (url.pathname === "/api/favorites" && req.method === "GET") {
 			const anonymousId = extractAnonymousId(req);
-			if (!anonymousId) return jsonResponse({ error: "X-Anonymous-Id header required" }, 400);
+			if (!anonymousId) return jsonResponse({ error: "Invalid or missing X-Anonymous-Id header" }, 400);
 			try {
 				const favSet = await getUserFavorites(env, anonymousId);
 				return jsonResponse({ favorites: Array.from(favSet) });
@@ -279,10 +285,13 @@ export default {
 		// POST /api/favorites/toggle
 		if (url.pathname === "/api/favorites/toggle" && req.method === "POST") {
 			const anonymousId = extractAnonymousId(req);
-			if (!anonymousId) return jsonResponse({ error: "X-Anonymous-Id header required" }, 400);
+			if (!anonymousId) return jsonResponse({ error: "Invalid or missing X-Anonymous-Id header" }, 400);
 			try {
-				const { menuId } = await req.json();
-				if (!menuId || typeof menuId !== "string") return jsonResponse({ error: "menuId required" }, 400);
+				const body = await req.json();
+				const { menuId } = body;
+				if (!menuId || typeof menuId !== "string" || menuId.length > MENU_ID_MAX_LEN) {
+					return jsonResponse({ error: `menuId required (max ${MENU_ID_MAX_LEN} chars)` }, 400);
+				}
 				const favSet = await getUserFavorites(env, anonymousId);
 				const wasLiked = favSet.has(menuId);
 				wasLiked ? favSet.delete(menuId) : favSet.add(menuId);
@@ -300,10 +309,25 @@ export default {
 		ctx.waitUntil((async () => {
 			try {
 				const data = await buildMenuJson();
-				await Promise.all([setCachedToday(env, data), setMenuByDate(env, data)]);
+				// 데이터가 있을 때만 저장 (빈 메뉴로 캐시 오염 방지)
+				if (data.hasData) {
+					await setMenuByDate(env, data);
+				}
 				const r301 = data.restaurants.find(r => r.id === "301");
 				const rdure = data.restaurants.find(r => r.id === "dure");
-				console.log(`Cron OK: ${data.date}, 301=${r301?.lunch?.length}, dure=${rdure?.lunch?.length}`);
+				console.log(`Cron OK: ${data.date}, 301=${r301?.lunch?.length}, dure=${rdure?.lunch?.length}, saved=${data.hasData}`);
+
+				// 슬랙 알림 (SLACK_WEBHOOK_URL 환경변수 설정 시 활성화)
+				if (env.SLACK_WEBHOOK_URL && data.hasData) {
+					const text = data.restaurants
+						.map(r => `*${r.name}*\n${r.lunch.slice(0, 5).join(" / ")}`)
+						.join("\n\n");
+					await fetch(env.SLACK_WEBHOOK_URL, {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({ text: `오늘(${data.date}) 식단\n\n${text}` }),
+					}).catch(e => console.warn("Slack webhook failed:", e?.message));
+				}
 			} catch (e) {
 				console.error("Cron failed:", e?.message || e);
 			}

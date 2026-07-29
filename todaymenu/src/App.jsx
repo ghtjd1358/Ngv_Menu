@@ -9,8 +9,8 @@ import MenuCalendar from "./MenuCalendar";
 
 // ── Palette ──────────────────────────────────────────────────────────────────
 const C = {
-  bg: "#F0F2F8",        // 연한 청회색 배경 – 흰 카드가 뜨도록
-  card: "#FFFFFF",      // 카드 순백
+  bg: "#F0F2F8",
+  card: "#FFFFFF",
   header: "#111827",
   border: "#DDE1EF",
   text1: "#111827",
@@ -26,28 +26,34 @@ const C = {
   redLight: "#FEE2E2",
 };
 
+// ── 상수: 컴포넌트 외부에서 한 번만 계산 ─────────────────────────────────────
+const API_BASE =
+  import.meta.env.VITE_API_BASE ||
+  (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+    ? "http://localhost:8787"
+    : "https://menu-worker.hojjang18.workers.dev");
+
+// ── Date helpers ─────────────────────────────────────────────────────────────
 function formatLabel(isoStr) {
   return format(parseISO(isoStr), "M월 d일 EEEE", { locale: ko });
 }
 
-// ── Lunch status helpers ─────────────────────────────────────────────────────
-function parseLunchHours(str) {
-  if (!str) return null;
-  const m = str.match(/(\d{1,2}):(\d{2})\s*~\s*(\d{1,2}):(\d{2})/);
-  if (!m) return null;
-  return { sh: +m[1], sm: +m[2], eh: +m[3], em: +m[4] };
+function relativeDateLabel(isoStr, todayStr) {
+  const diff = Math.round(
+    (new Date(isoStr + "T00:00:00Z") - new Date(todayStr + "T00:00:00Z")) / 86400000
+  );
+  if (diff === 0) return "오늘";
+  if (diff === 1) return "내일";
+  if (diff === -1) return "어제";
+  if (diff > 0) return `${diff}일 후`;
+  return `${Math.abs(diff)}일 전`;
 }
 
-function getLunchStatus(hoursStr) {
-  const p = parseLunchHours(hoursStr);
-  if (!p) return null;
-  const now = new Date();
-  const kst = (now.getUTCHours() * 60 + now.getUTCMinutes() + 9 * 60) % (24 * 60);
-  const start = p.sh * 60 + p.sm;
-  const end = p.eh * 60 + p.em;
-  if (kst < start) return { state: "before", diff: start - kst };
-  if (kst >= end) return { state: "closed" };
-  return { state: "open", diff: end - kst };
+function formatKSTTime(isoStr) {
+  if (!isoStr) return null;
+  return new Intl.DateTimeFormat("ko-KR", {
+    timeZone: "Asia/Seoul", hour: "2-digit", minute: "2-digit", hour12: true,
+  }).format(new Date(isoStr));
 }
 
 // ── Menu line parser ─────────────────────────────────────────────────────────
@@ -57,30 +63,6 @@ function parseMenuLine(text) {
   const priced = text.match(/^(.+?)\s*[：:]\s*(\d[\d,]*원)\s*$/);
   if (priced) return { type: "item", name: stripMenuPrice(text), price: priced[2] };
   return { type: "item", name: text, price: null };
-}
-
-// ── Status badge ─────────────────────────────────────────────────────────────
-function StatusBadge({ hoursStr }) {
-  const [s, setS] = useState(() => getLunchStatus(hoursStr));
-  useEffect(() => {
-    const id = setInterval(() => setS(getLunchStatus(hoursStr)), 30_000);
-    return () => clearInterval(id);
-  }, [hoursStr]);
-  if (!s) return null;
-
-  const badge = (bg, color, dotColor, label, pulse) => (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, borderRadius: 99, padding: "3px 11px", fontSize: 13, fontWeight: 600, background: bg, color, whiteSpace: "nowrap" }}>
-      <span className={pulse ? "pulse" : ""} style={{ width: 6, height: 6, borderRadius: 99, background: dotColor, display: "inline-block" }} />
-      {label}
-    </span>
-  );
-
-  if (s.state === "before") {
-    const h = Math.floor(s.diff / 60), m = s.diff % 60;
-    return badge(C.amberLight, C.amber, "#F59E0B", h > 0 ? `${h}시간 ${m}분 후 오픈` : `${m}분 후 오픈`, false);
-  }
-  if (s.state === "closed") return badge(C.redLight, C.red, C.red, "오늘 종료", false);
-  return badge(C.greenLight, C.green, C.green, `영업중 · ${s.diff}분 후 종료`, true);
 }
 
 // 숨길 섹션 키워드 (회사 직원이 이용 불가한 식당/코너)
@@ -144,8 +126,8 @@ function RestaurantCard({ restaurant, liked, onToggle, accentColor }) {
             {hours && <p style={{ margin: "4px 0 0", fontSize: 13, color: C.text3 }}>{hours}</p>}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-            <StatusBadge hoursStr={hours} />
             <button type="button" onClick={onToggle} aria-pressed={liked}
+              aria-label={liked ? `${name} 찜 해제` : `${name} 찜하기`}
               style={{ display: "inline-flex", alignItems: "center", borderRadius: 99, padding: "4px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer", border: "none", background: liked ? C.redLight : C.bg, color: liked ? C.red : C.text3, whiteSpace: "nowrap" }}>
               {liked ? "♥" : "♡"}
             </button>
@@ -202,14 +184,26 @@ function OrderCalculator({ sandwiches, drinks }) {
   const removeRow = (id) => setRows(prev => prev.length > 1 ? prev.filter(r => r.id !== id) : prev);
 
   const handleCopy = () => {
-    const lines = rows
-      .filter(r => r.sandwichId || r.drinkId)
-      .map(r => {
-        const s = sandwiches.find(s => s.id === r.sandwichId);
-        const d = drinks.find(d => d.id === r.drinkId);
-        return `${r.name || "미입력"}: ${s?.name || "-"}${d && d.price > 0 ? ` + ${d.name}` : ""} = ${getPrice(r).toLocaleString()}원`;
-      });
-    navigator.clipboard.writeText([...lines, ``, `합계: ${total.toLocaleString()}원`].join("\n"));
+    const validRows = rows.filter(r => r.sandwichId || r.drinkId);
+    const lines = validRows.map(r => {
+      const s = sandwiches.find(s => s.id === r.sandwichId);
+      const d = drinks.find(d => d.id === r.drinkId);
+      return `${r.name || "미입력"}: ${s?.name || "-"}${d && d.price > 0 ? ` + ${d.name}` : ""} = ${getPrice(r).toLocaleString()}원`;
+    });
+    // 발주용 품목별 집계
+    const itemCounts = {};
+    validRows.forEach(r => {
+      if (!r.sandwichId) return;
+      const s = sandwiches.find(s => s.id === r.sandwichId);
+      if (s) itemCounts[s.name] = (itemCounts[s.name] || 0) + 1;
+    });
+    const summary = Object.entries(itemCounts).map(([n, c]) => `${n} ×${c}`).join(", ");
+    navigator.clipboard.writeText([
+      ...lines,
+      ``,
+      summary ? `[발주] ${summary}` : "",
+      `합계: ${total.toLocaleString()}원`,
+    ].filter(Boolean).join("\n"));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -328,8 +322,9 @@ function QuiznosModal({ open, onClose, items = [], drinks = [], updatedAt }) {
 
 // ── App ───────────────────────────────────────────────────────────────────────
 export default function App() {
-  const TODAY = getKSTDateStr(0);
-  const TOMORROW = getKSTDateStr(1);
+  // 세션 내 변하지 않으므로 useMemo로 1회 계산
+  const TODAY = useMemo(() => getKSTDateStr(0), []);
+  const TOMORROW = useMemo(() => getKSTDateStr(1), []);
 
   const [selectedDate, setSelectedDate] = useState(TODAY);
   const [dataByDate, setDataByDate] = useState({});
@@ -343,12 +338,6 @@ export default function App() {
   const [quiznosDrinks, setQuiznosDrinks] = useState([]);
   const [quiznosUpdatedAt, setQuiznosUpdatedAt] = useState("");
 
-  const API_BASE =
-    import.meta.env.VITE_API_BASE ||
-    (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
-      ? "http://localhost:8787"
-      : "https://menu-worker.hojjang18.workers.dev");
-
   useEffect(() => { setAnonymousId(getOrCreateAnonymousId()); }, []);
 
   // 브라우저 탭 제목 동적 업데이트
@@ -356,11 +345,15 @@ export default function App() {
     document.title = `엔지미식회 · ${formatLabel(selectedDate)}`;
   }, [selectedDate]);
 
-  // 동시 fetch 추적 (loadingDate는 스피너 표시용, inFlight는 dedup용)
+  // dataByDate/likes를 ref로 동기화 → useCallback 의존성 최소화
   const inFlight = useRef(new Set());
+  const dataByDateRef = useRef(dataByDate);
+  useEffect(() => { dataByDateRef.current = dataByDate; }, [dataByDate]);
+  const likesRef = useRef(likes);
+  useEffect(() => { likesRef.current = likes; }, [likes]);
 
   const fetchMenu = useCallback((date, silent = false) => {
-    if (dataByDate[date] || inFlight.current.has(date)) return;
+    if (dataByDateRef.current[date] || inFlight.current.has(date)) return;
     inFlight.current.add(date);
     if (!silent) setLoadingDate(date);
     fetch(`${API_BASE}/api/menu/today?date=${date}`, { cache: "no-store" })
@@ -371,7 +364,7 @@ export default function App() {
       })
       .catch(e => { if (!silent) setErrorByDate(prev => ({ ...prev, [date]: e?.message || "오류" })); })
       .finally(() => { inFlight.current.delete(date); if (!silent) setLoadingDate(null); });
-  }, [dataByDate, API_BASE]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchMonthData = useCallback((year, month) => {
     fetch(`${API_BASE}/api/menu/month?year=${year}&month=${month}`)
@@ -382,7 +375,7 @@ export default function App() {
         }
       })
       .catch(() => {});
-  }, [API_BASE]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     fetchMenu(TODAY);
@@ -433,7 +426,7 @@ export default function App() {
 
   const handleToggle = useCallback(async (menuId) => {
     if (!anonymousId) return;
-    const wasLiked = !!likes[menuId];
+    const wasLiked = !!likesRef.current[menuId];
     setLikes(prev => ({ ...prev, [menuId]: !wasLiked }));
     try {
       const res = await fetch(`${API_BASE}/api/favorites/toggle`, {
@@ -447,7 +440,7 @@ export default function App() {
     } catch {
       setLikes(prev => ({ ...prev, [menuId]: wasLiked }));
     }
-  }, [anonymousId, likes]);
+  }, [anonymousId]); // likesRef로 최신값 참조, likes 의존성 제거
 
   const data = dataByDate[selectedDate];
   const loading = loadingDate === selectedDate || (!data && !errorByDate[selectedDate]);
@@ -484,10 +477,10 @@ export default function App() {
           {/* ── 왼쪽: 오늘 메뉴 + 버튼 ── */}
           <div className="left-panel">
             {/* 날짜 헤더 (항상 표시) */}
-            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 18 }}>
+            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 14 }}>
               <div>
                 <p style={{ margin: "0 0 3px", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: C.text3 }}>
-                  {selectedDate === TODAY ? "오늘" : selectedDate === TOMORROW ? "내일" : "선택 날짜"}
+                  {relativeDateLabel(selectedDate, TODAY)}
                 </p>
                 <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: C.text1, lineHeight: 1.2 }}>
                   {formatLabel(selectedDate)}
@@ -500,6 +493,13 @@ export default function App() {
                 </button>
               )}
             </div>
+
+            {/* 마지막 업데이트 시각 */}
+            {data?.updatedAt && (
+              <p style={{ margin: "0 0 14px", fontSize: 12, color: C.text3 }}>
+                마지막 업데이트: {formatKSTTime(data.updatedAt)}
+              </p>
+            )}
 
             {loading && showSpinner ? (
               /* 200ms 이상 걸릴 때만 스피너 표시 */
@@ -549,6 +549,7 @@ export default function App() {
             <MenuCalendar
               selectedDate={selectedDate}
               dataByDate={dataByDate}
+              availableDates={availableDates}
               onDateSelect={setSelectedDate}
               onMonthChange={handleMonthChange}
             />

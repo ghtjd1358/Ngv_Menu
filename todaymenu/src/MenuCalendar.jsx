@@ -10,7 +10,8 @@ function cellISO(year, month, day) {
   return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
-export default function MenuCalendar({ selectedDate, dataByDate, onDateSelect, onMonthChange }) {
+export default function MenuCalendar({ selectedDate, dataByDate, availableDates = [], onDateSelect, onMonthChange }) {
+  const availableSet = useMemo(() => new Set(availableDates), [availableDates]);
   const [view, setView] = useState(() => ({
     year: parseInt(selectedDate.slice(0, 4)),
     month: parseInt(selectedDate.slice(5, 7)),
@@ -79,6 +80,9 @@ export default function MenuCalendar({ selectedDate, dataByDate, onDateSelect, o
               const holiday = getHoliday(iso);
               const isRed = di === 0 || !!holiday;
               const isSat = di === 6;
+              // 과거 날짜이면서 데이터도 없으면 비활성화
+              const isPast = iso < today;
+              const isDisabled = isPast && !availableSet.has(iso) && !menuData;
 
               // 달력 셀: 301동식당 메뉴만 표시
               const menuData = dataByDate[iso];
@@ -97,13 +101,15 @@ export default function MenuCalendar({ selectedDate, dataByDate, onDateSelect, o
               return (
                 <button
                   key={di}
-                  onClick={() => onDateSelect(iso)}
+                  onClick={isDisabled ? undefined : () => onDateSelect(iso)}
                   title={holiday || undefined}
+                  disabled={isDisabled}
                   style={{
                     background: isSelected ? "#4361EE" : isToday ? "#EEF1FD" : "transparent",
                     border: `1.5px solid ${isToday && !isSelected ? "#4361EE" : "transparent"}`,
                     borderRadius: 8,
-                    cursor: "pointer",
+                    cursor: isDisabled ? "default" : "pointer",
+                    opacity: isDisabled ? 0.35 : 1,
                     minHeight: 90,
                     minWidth: 0,
                     padding: "6px 3px 5px",
