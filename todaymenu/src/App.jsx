@@ -547,7 +547,7 @@ export default function App() {
 
           {/* ── 오른쪽: 달력 + 버튼 ── */}
           <div className="right-panel">
-            <p style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 700, color: C.text3, letterSpacing: "0.04em" }}>메뉴 기록</p>
+            <p style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 700, color: C.text3, letterSpacing: "0.04em" }}>메뉴</p>
             <MenuCalendar
               selectedDate={selectedDate}
               dataByDate={dataByDate}
