@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { getHoliday } from "./utils/holidays";
 import { todayKST } from "./utils/date";
 import { stripMenuPrice } from "./utils/menu";
@@ -10,6 +10,12 @@ function cellISO(year, month, day) {
   return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
+function addDayToISO(iso, days) {
+  const [y, m, d] = iso.split("-").map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d + days));
+  return dt.toISOString().slice(0, 10);
+}
+
 export default function MenuCalendar({ selectedDate, dataByDate, availableDates = [], onDateSelect, onMonthChange }) {
   const availableSet = useMemo(() => new Set(availableDates), [availableDates]);
   const [view, setView] = useState(() => ({
@@ -17,15 +23,18 @@ export default function MenuCalendar({ selectedDate, dataByDate, availableDates 
     month: parseInt(selectedDate.slice(5, 7)),
   }));
 
-  // selectedDate가 바뀌면 달력 뷰를 해당 월로 이동
+  // 키보드 포커스 날짜 (선택과 별개로 달력 내 포커스 위치)
+  const [focusedISO, setFocusedISO] = useState(selectedDate);
+  const buttonRefs = useRef({});
+
   useEffect(() => {
     setView({
       year: parseInt(selectedDate.slice(0, 4)),
       month: parseInt(selectedDate.slice(5, 7)),
     });
+    setFocusedISO(selectedDate);
   }, [selectedDate]);
 
-  // useMemo: 세션 내 날짜가 바뀌지 않으므로 1회만 계산
   const today = useMemo(() => todayKST(), []);
   const { year, month } = view;
 
@@ -37,30 +46,52 @@ export default function MenuCalendar({ selectedDate, dataByDate, availableDates 
     onMonthChange?.(new Date(y, m - 1, 1));
   };
 
-  // 항상 42칸(6행) 고정 → 월 이동 시 달력 높이 불변
+  // 달력 그리드: 항상 42칸(6행) 고정
   const startDow = new Date(year, month - 1, 1).getDay();
-  const lastDay = new Date(year, month, 0).getDate();
-  const cells = [...Array(startDow).fill(null), ...Array.from({ length: lastDay }, (_, i) => i + 1)];
-  while (cells.length < 42) cells.push(null); // 6행 고정
-
+  const lastDay  = new Date(year, month, 0).getDate();
+  const cells    = [...Array(startDow).fill(null), ...Array.from({ length: lastDay }, (_, i) => i + 1)];
+  while (cells.length < 42) cells.push(null);
   const weeks = [];
   for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
 
+  // 키보드 내비게이션 핸들러
+  const handleKeyDown = useCallback((iso, e) => {
+    const DELTAS = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: 7, ArrowUp: -7 };
+    const delta = DELTAS[e.key];
+    if (delta !== undefined) {
+      e.preventDefault();
+      const target = addDayToISO(iso, delta);
+      setFocusedISO(target);
+      // 이전/다음 달로 넘어가면 뷰 이동
+      const ty = parseInt(target.slice(0, 4));
+      const tm = parseInt(target.slice(5, 7));
+      if (ty !== year || tm !== month) {
+        setView({ year: ty, month: tm });
+        onMonthChange?.(new Date(ty, tm - 1, 1));
+      }
+      // 다음 렌더 후 포커스 이동
+      setTimeout(() => buttonRefs.current[target]?.focus(), 0);
+      return;
+    }
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onDateSelect(iso);
+    }
+  }, [year, month, onMonthChange, onDateSelect]);
+
   return (
     <div style={{ border: "1.5px solid #C8CEDF", borderRadius: 16, overflow: "hidden", boxShadow: "0 2px 12px rgba(30,36,51,0.07)" }}>
-      {/* 헤더: 월 네비게이션 + 요일 */}
+      {/* 헤더: 월 내비게이션 + 요일 */}
       <div style={{ background: "#1E2433", padding: "12px 16px 0" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
           <button onClick={() => navigate(-1)} style={NAV} aria-label="이전 달">‹</button>
           <span style={{ color: "#fff", fontSize: 14, fontWeight: 700 }}>{year}년 {month}월</span>
           <button onClick={() => navigate(1)} style={NAV} aria-label="다음 달">›</button>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", paddingBottom: 8 }}>
+        <div role="row" style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", paddingBottom: 8 }}>
           {DAY_NAMES.map((name, i) => (
-            <div key={i} style={{
-              textAlign: "center", fontSize: 12, fontWeight: 700,
-              color: i === 0 ? "#F87171" : i === 6 ? "#93C5FD" : "rgba(255,255,255,0.55)",
-            }}>
+            <div key={name} role="columnheader" aria-label={["일요일","월요일","화요일","수요일","목요일","금요일","토요일"][i]}
+              style={{ textAlign: "center", fontSize: 12, fontWeight: 700, color: i === 0 ? "#F87171" : i === 6 ? "#93C5FD" : "rgba(255,255,255,0.55)" }}>
               {name}
             </div>
           ))}
@@ -68,30 +99,30 @@ export default function MenuCalendar({ selectedDate, dataByDate, availableDates 
       </div>
 
       {/* 달력 본체 */}
-      <div style={{ padding: 6, background: "#fff" }}>
+      <div role="grid" aria-label={`${year}년 ${month}월 식단 달력`} style={{ padding: 6, background: "#fff" }}>
         {weeks.map((week, wi) => (
-          <div key={wi} style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2, marginBottom: 2 }}>
+          <div key={wi} role="row" style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2, marginBottom: 2 }}>
             {week.map((day, di) => {
-              if (!day) return <div key={di} style={{ minHeight: 90 }} />;
+              if (!day) return <div key={di} role="gridcell" style={{ minHeight: 90 }} />;
 
-              const iso = cellISO(year, month, day);
+              const iso      = cellISO(year, month, day);
               const isSelected = iso === selectedDate;
-              const isToday = iso === today;
-              const holiday = getHoliday(iso);
-              const isRed = di === 0 || !!holiday;
-              const isSat = di === 6;
+              const isToday  = iso === today;
+              const holiday  = getHoliday(iso);
+              const isRed    = di === 0 || !!holiday;
+              const isSat    = di === 6;
 
-              // 달력 셀: 301동식당 메뉴만 표시
+              // menuData 먼저 선언 (isDisabled에서 참조)
               const menuData = dataByDate[iso];
-
-              // 과거 날짜이면서 데이터도 없으면 비활성화 (menuData 선언 이후에 참조)
-              const isPast = iso < today;
-              const isDisabled = isPast && !availableSet.has(iso) && !menuData;
-              const r301 = menuData?.restaurants?.find(r => r.id === "301");
+              const r301     = menuData?.restaurants?.find(r => r.id === "301");
               const menuItems = (r301?.lunch || [])
                 .filter(l => l.length > 1 && !l.startsWith("<"))
                 .slice(0, 6)
                 .map(stripMenuPrice);
+
+              const isPast     = iso < today;
+              const isDisabled = isPast && !availableSet.has(iso) && !menuData;
+              const isFocused  = iso === focusedISO;
 
               const numColor = isSelected ? "#fff"
                 : isRed ? "#F87171"
@@ -102,8 +133,15 @@ export default function MenuCalendar({ selectedDate, dataByDate, availableDates 
               return (
                 <button
                   key={di}
+                  ref={el => { buttonRefs.current[iso] = el; }}
+                  role="gridcell"
+                  aria-label={`${month}월 ${day}일${holiday ? ` ${holiday}` : ""}${isToday ? " 오늘" : ""}${isSelected ? " 선택됨" : ""}`}
+                  aria-pressed={isSelected}
+                  aria-disabled={isDisabled}
+                  tabIndex={isFocused ? 0 : -1}
                   onClick={isDisabled ? undefined : () => onDateSelect(iso)}
-                  title={holiday || undefined}
+                  onKeyDown={isDisabled ? undefined : (e) => handleKeyDown(iso, e)}
+                  onFocus={() => setFocusedISO(iso)}
                   disabled={isDisabled}
                   style={{
                     background: isSelected ? "#4361EE" : isToday ? "#EEF1FD" : "transparent",
@@ -129,24 +167,19 @@ export default function MenuCalendar({ selectedDate, dataByDate, availableDates 
                   {holiday && !isSelected && (
                     <span style={{ fontSize: 9, color: "#F87171", fontWeight: 700, lineHeight: 1.2, flexShrink: 0, maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {holiday
-                      .replace("설날 전날", "설날 전")
-                      .replace("설날 다음날", "설날 후")
-                      .replace("추석 전날", "추석 전")
-                      .replace("추석 다음날", "추석 후")
-                      .replace(/ (전날|다음날|연휴)$/, "")}
+                        .replace("설날 전날", "설날 전")
+                        .replace("설날 다음날", "설날 후")
+                        .replace("추석 전날", "추석 전")
+                        .replace("추석 다음날", "추석 후")
+                        .replace(/ (전날|다음날|연휴)$/, "")}
                     </span>
                   )}
                   {menuItems.map((item, i) => (
-                    <span key={i} style={{
-                      fontSize: 13,
-                      lineHeight: 1.3,
+                    <span key={`${item}-${i}`} style={{
+                      fontSize: 13, lineHeight: 1.3,
                       color: isSelected ? "rgba(255,255,255,0.88)" : "#5B6070",
-                      width: "100%",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      padding: "0 2px",
-                      textAlign: "center",
+                      width: "100%", overflow: "hidden", textOverflow: "ellipsis",
+                      whiteSpace: "nowrap", padding: "0 2px", textAlign: "center",
                     }}>
                       {item}
                     </span>
