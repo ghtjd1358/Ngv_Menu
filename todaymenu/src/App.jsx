@@ -473,7 +473,7 @@ export default function App() {
     <div style={{ minHeight: "100dvh", background: C.bg, fontFamily: "'Pretendard', 'Noto Sans KR', -apple-system, sans-serif" }}>
       {/* Header */}
       <header style={{ background: C.header, position: "sticky", top: 0, zIndex: 20 }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ maxWidth: 1600, margin: "0 auto", padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ width: 22, height: 22, background: C.accent, borderRadius: 6, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "#fff" }}>식</span>
             <span style={{ fontSize: 14, fontWeight: 700, color: "#FFFFFF" }}>엔지미식회</span>
@@ -483,7 +483,7 @@ export default function App() {
       </header>
 
       {/* Content */}
-      <main style={{ maxWidth: 1200, margin: "0 auto", padding: "24px 20px 32px" }}>
+      <main style={{ maxWidth: 1600, margin: "0 auto", padding: "24px 20px 32px" }}>
         <div className="app-layout">
           {/* ── 왼쪽: 오늘 메뉴 + 버튼 ── */}
           <div className="left-panel">

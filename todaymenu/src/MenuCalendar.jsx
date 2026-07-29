@@ -111,12 +111,14 @@ export default function MenuCalendar({ selectedDate, dataByDate, onDateSelect, o
                     borderRadius: 8,
                     cursor: "pointer",
                     minHeight: 90,
+                    minWidth: 0,
                     padding: "6px 3px 5px",
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
                     gap: 2,
                     width: "100%",
+                    overflow: "hidden",
                   }}
                 >
                   <span style={{ fontSize: 13, fontWeight: 700, color: numColor, lineHeight: 1.3, flexShrink: 0 }}>
