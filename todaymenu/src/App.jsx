@@ -456,6 +456,14 @@ export default function App() {
   const r301 = data?.restaurants?.find(r => r.id === "301");
   const dure = data?.restaurants?.find(r => r.id === "dure");
 
+  // 200ms 이내 응답이면 스피너 생략 (빠른 캐시 히트 시 깜빡임 방지)
+  const [showSpinner, setShowSpinner] = useState(false);
+  useEffect(() => {
+    if (!loading) { setShowSpinner(false); return; }
+    const t = setTimeout(() => setShowSpinner(true), 200);
+    return () => clearTimeout(t);
+  }, [loading]);
+
   return (
     <div style={{ minHeight: "100dvh", background: C.bg, fontFamily: "'Pretendard', 'Noto Sans KR', -apple-system, sans-serif" }}>
       {/* Header */}
@@ -492,9 +500,13 @@ export default function App() {
               )}
             </div>
 
-            {loading ? (
-              <div style={{ display: "flex", justifyContent: "center", padding: "40px 0", fontSize: 14, color: C.text3 }}>메뉴 불러오는 중…</div>
-            ) : error ? (
+            {loading && showSpinner ? (
+              /* 200ms 이상 걸릴 때만 스피너 표시 */
+              <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 10, padding: "56px 0", color: C.text3 }}>
+                <div className="spinner" />
+                <span style={{ fontSize: 14 }}>불러오는 중…</span>
+              </div>
+            ) : !loading && error ? (
               <div style={{ background: C.redLight, borderRadius: 16, padding: 20 }}>
                 <p style={{ margin: 0, fontSize: 14, color: C.red }}>{error}</p>
                 <button type="button" onClick={() => { setErrorByDate(p => ({ ...p, [selectedDate]: null })); fetchMenu(selectedDate); }}
@@ -502,17 +514,17 @@ export default function App() {
                   다시 시도
                 </button>
               </div>
-            ) : noMenuData ? (
+            ) : !loading && noMenuData ? (
               <div style={{ background: C.card, borderRadius: 16, padding: 32, textAlign: "center", boxShadow: "0 2px 12px rgba(20,30,60,0.07)" }}>
                 <p style={{ margin: 0, fontSize: 15, fontWeight: 600, color: C.text2 }}>
-                  {selectedDate < TODAY ? "해당 날짜의 메뉴 데이터가 없습니다"
+                  {selectedDate < TODAY ? "해당 날짜의 메뉴 기록이 없습니다"
                     : selectedDate === TODAY ? "오늘 메뉴를 불러오지 못했습니다"
                     : "아직 업데이트되지 않았습니다"}
                 </p>
                 <p style={{ margin: "8px 0 0", fontSize: 13, color: C.text3 }}>
-                  {selectedDate < TODAY ? "서비스 시작 이전이거나 기록이 없습니다"
+                  {selectedDate < TODAY ? "서비스 시작 이전이거나 기록이 없는 날짜입니다"
                     : selectedDate === TODAY ? "잠시 후 다시 시도해주세요"
-                    : "내일 메뉴는 당일 오전 중 업데이트됩니다"}
+                    : "메뉴는 당일 오전 중 업데이트됩니다"}
                 </p>
                 {selectedDate !== TODAY && (
                   <button type="button" onClick={() => setSelectedDate(TODAY)}
@@ -521,12 +533,12 @@ export default function App() {
                   </button>
                 )}
               </div>
-            ) : (
+            ) : !loading && data ? (
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                 {r301 && <RestaurantCard restaurant={r301} accentColor={C.accent} liked={!!likes["301"]} onToggle={() => handleToggle("301")} />}
                 {dure && <RestaurantCard restaurant={dure} accentColor={C.green} liked={!!likes["dure"]} onToggle={() => handleToggle("dure")} />}
               </div>
-            )}
+            ) : null}
 
           </div>
 
