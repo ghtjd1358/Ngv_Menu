@@ -126,7 +126,12 @@ export default function MenuCalendar({ selectedDate, dataByDate, onDateSelect, o
                   </span>
                   {holiday && !isSelected && (
                     <span style={{ fontSize: 9, color: "#F87171", fontWeight: 700, lineHeight: 1.2, flexShrink: 0, maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {holiday.replace(/ (전날|다음날|연휴)$/, "")}
+                      {holiday
+                      .replace("설날 전날", "설날 전")
+                      .replace("설날 다음날", "설날 후")
+                      .replace("추석 전날", "추석 전")
+                      .replace("추석 다음날", "추석 후")
+                      .replace(/ (전날|다음날|연휴)$/, "")}
                     </span>
                   )}
                   {menuItems.map((item, i) => (
