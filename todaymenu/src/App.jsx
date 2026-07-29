@@ -350,6 +350,11 @@ export default function App() {
 
   useEffect(() => { setAnonymousId(getOrCreateAnonymousId()); }, []);
 
+  // 브라우저 탭 제목 동적 업데이트
+  useEffect(() => {
+    document.title = `엔지미식회 · ${formatLabel(selectedDate)}`;
+  }, [selectedDate]);
+
   // 동시 fetch 추적 (loadingDate는 스피너 표시용, inFlight는 dedup용)
   const inFlight = useRef(new Set());
 
@@ -457,8 +462,8 @@ export default function App() {
       <header style={{ background: C.header, position: "sticky", top: 0, zIndex: 20 }}>
         <div style={{ maxWidth: 1600, margin: "0 auto", padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ width: 22, height: 22, background: C.accent, borderRadius: 6, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "#fff" }}>식</span>
-            <span style={{ fontSize: 14, fontWeight: 700, color: "#FFFFFF" }}>엔지미식회</span>
+            <img src="/favicon.svg" alt="" style={{ width: 28, height: 28, borderRadius: 8 }} />
+            <span style={{ fontSize: 15, fontWeight: 700, color: "#FFFFFF" }}>엔지미식회</span>
           </div>
           <span style={{ fontSize: 13, color: "#8A95B0" }}>{formatLabel(selectedDate)}</span>
         </div>
