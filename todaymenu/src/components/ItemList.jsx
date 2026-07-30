@@ -1,6 +1,6 @@
 import { C } from "../constants";
 
-export default function ItemList({ items, showPrices = false, fontSize = 15 }) {
+export default function ItemList({ items, showPrices = false, fontSize = 17 }) {
   return (
     <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 6, width: "100%" }}>
       {items.map((item, i) =>
