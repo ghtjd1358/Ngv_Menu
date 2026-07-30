@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { C } from "../constants";
-import { parseMenuLine } from "../utils/menu";
-import { isSectionHidden } from "../utils/menu";
+import { parseMenuLine, isSectionHidden } from "../utils/menu";
 import ItemList from "./ItemList";
 
 export default function RestaurantCard({ restaurant, liked, onToggle, accentColor }) {

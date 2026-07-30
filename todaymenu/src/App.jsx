@@ -4,7 +4,13 @@ import { ko } from "date-fns/locale";
 import { format, parseISO } from "date-fns";
 import { getOrCreateAnonymousId } from "./utils/anonymousId";
 import { getKSTDateStr } from "./utils/date";
-import { C, API_BASE } from "./constants";
+import { C } from "./constants";
+
+const API_BASE =
+  import.meta.env.VITE_API_BASE ||
+  (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+    ? "http://localhost:8787"
+    : "https://menu-worker.hojjang18.workers.dev");
 import RestaurantCard from "./components/RestaurantCard";
 import QuiznosModal from "./components/QuiznosModal";
 import MenuCalendar from "./MenuCalendar";
