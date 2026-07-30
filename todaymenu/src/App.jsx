@@ -2,7 +2,6 @@ import "./App.css";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { ko } from "date-fns/locale";
 import { format, parseISO } from "date-fns";
-import { getOrCreateAnonymousId } from "./utils/anonymousId";
 import { getKSTDateStr } from "./utils/date";
 import { C } from "./constants";
 
@@ -45,26 +44,20 @@ export default function App() {
   const [loadingDate,  setLoadingDate]  = useState(null);
   const [errorByDate,  setErrorByDate]  = useState({});
   const [availableDates, setAvailableDates] = useState([]);
-  const [likes,        setLikes]        = useState({});
-  const [anonymousId,  setAnonymousId]  = useState(null);
   const [quiznosOpen,  setQuiznosOpen]  = useState(false);
   const [quiznosItems, setQuiznosItems] = useState([]);
   const [quiznosDrinks, setQuiznosDrinks] = useState([]);
   const [quiznosUpdatedAt, setQuiznosUpdatedAt] = useState("");
-
-  useEffect(() => { setAnonymousId(getOrCreateAnonymousId()); }, []);
 
   // 탭 제목 동적 업데이트
   useEffect(() => {
     document.title = `엔지미식회 · ${formatLabel(selectedDate)}`;
   }, [selectedDate]);
 
-  // dataByDate / likes를 ref로 동기화 → useCallback 의존성 최소화
-  const inFlight       = useRef(new Set());
-  const dataByDateRef  = useRef(dataByDate);
-  const likesRef       = useRef(likes);
+  // dataByDate를 ref로 동기화 → useCallback 의존성 최소화
+  const inFlight      = useRef(new Set());
+  const dataByDateRef = useRef(dataByDate);
   useEffect(() => { dataByDateRef.current = dataByDate; }, [dataByDate]);
-  useEffect(() => { likesRef.current = likes; }, [likes]);
 
   // ── Fetch 함수 ──────────────────────────────────────────────────────────────
   const fetchMenu = useCallback((date, silent = false) => {
@@ -137,18 +130,6 @@ export default function App() {
   useEffect(() => { fetchMenu(selectedDate); }, [selectedDate]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (!anonymousId) return;
-    fetch(`${API_BASE}/api/favorites`, { headers: { "X-Anonymous-Id": anonymousId } })
-      .then(r => r.ok ? r.json() : null)
-      .then(json => {
-        if (!json) return;
-        const favs = Array.isArray(json.favorites) ? json.favorites : [];
-        setLikes(prev => { const next = { ...prev }; favs.forEach(id => { next[id] = true; }); return next; });
-      })
-      .catch(() => {});
-  }, [anonymousId]);
-
-  useEffect(() => {
     fetch("/quiznos.json", { cache: "no-store" })
       .then(r => r.json())
       .then(json => {
@@ -159,23 +140,6 @@ export default function App() {
       .catch(() => {});
   }, []);
 
-  const handleToggle = useCallback(async (menuId) => {
-    if (!anonymousId) return;
-    const wasLiked = !!likesRef.current[menuId];
-    setLikes(prev => ({ ...prev, [menuId]: !wasLiked }));
-    try {
-      const res = await fetch(`${API_BASE}/api/favorites/toggle`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Anonymous-Id": anonymousId },
-        body: JSON.stringify({ menuId }),
-      });
-      if (!res.ok) throw new Error();
-      const json = await res.json();
-      setLikes(prev => ({ ...prev, [menuId]: json.liked }));
-    } catch {
-      setLikes(prev => ({ ...prev, [menuId]: wasLiked }));
-    }
-  }, [anonymousId]);
 
   // ── 파생 상태 ────────────────────────────────────────────────────────────────
   const data       = dataByDate[selectedDate];
@@ -303,8 +267,8 @@ export default function App() {
               </div>
             ) : !loading && data ? (
               <div key={selectedDate} className="anim-fade-up" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                {r301 && <RestaurantCard restaurant={r301} accentColor={C.accent} liked={!!likes["301"]} onToggle={() => handleToggle("301")} primary />}
-                {dure && <RestaurantCard restaurant={dure} accentColor={C.green} liked={!!likes["dure"]} onToggle={() => handleToggle("dure")} />}
+                {r301 && <RestaurantCard restaurant={r301} accentColor={C.accent} primary />}
+                {dure && <RestaurantCard restaurant={dure} accentColor={C.green} />}
               </div>
             ) : null}
           </div>
