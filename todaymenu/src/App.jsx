@@ -303,7 +303,7 @@ export default function App() {
               </div>
             ) : !loading && data ? (
               <div key={selectedDate} className="anim-fade-up" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                {r301 && <RestaurantCard restaurant={r301} accentColor={C.accent} liked={!!likes["301"]} onToggle={() => handleToggle("301")} />}
+                {r301 && <RestaurantCard restaurant={r301} accentColor={C.accent} liked={!!likes["301"]} onToggle={() => handleToggle("301")} primary />}
                 {dure && <RestaurantCard restaurant={dure} accentColor={C.green} liked={!!likes["dure"]} onToggle={() => handleToggle("dure")} />}
               </div>
             ) : null}

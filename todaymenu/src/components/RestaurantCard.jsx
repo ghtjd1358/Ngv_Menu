@@ -3,7 +3,7 @@ import { C } from "../constants";
 import { parseMenuLine, isSectionHidden } from "../utils/menu";
 import ItemList from "./ItemList";
 
-export default function RestaurantCard({ restaurant, liked, onToggle, accentColor }) {
+export default function RestaurantCard({ restaurant, liked, onToggle, accentColor, primary = false }) {
   const { name, hours, lunch } = restaurant;
   const [showOrder, setShowOrder] = useState(false);
 
@@ -48,7 +48,7 @@ export default function RestaurantCard({ restaurant, liked, onToggle, accentColo
           <p style={{ margin: 0, fontSize: 13, color: C.text3 }}>메뉴 정보 없음</p>
         ) : (
           <>
-            {mainItems.length > 0 && <ItemList items={mainItems} />}
+            {mainItems.length > 0 && <ItemList items={mainItems} fontSize={primary ? 17 : 15} />}
             {hasOrder && (
               <div style={{ marginTop: mainItems.length > 0 ? 12 : 0 }}>
                 <button type="button" onClick={() => setShowOrder(s => !s)}
