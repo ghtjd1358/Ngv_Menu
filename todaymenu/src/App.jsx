@@ -185,6 +185,22 @@ export default function App() {
   const r301       = data?.restaurants?.find(r => r.id === "301");
   const dure       = data?.restaurants?.find(r => r.id === "dure");
 
+  // 오늘 메뉴 업데이트 전 여부
+  // - 오전 8시 전 접속, 또는 updatedAt의 KST 날짜가 오늘이 아닌 경우
+  const showStaleMenuBanner = !loading && selectedDate === TODAY && (() => {
+    const kstHour = parseInt(
+      new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", hour: "numeric", hour12: false })
+        .format(new Date())
+    );
+    if (kstHour < 8) return true;
+    if (data?.updatedAt) {
+      const updatedKSTDate = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Seoul" })
+        .format(new Date(data.updatedAt));
+      return updatedKSTDate !== TODAY;
+    }
+    return false;
+  })();
+
   const [showSpinner, setShowSpinner] = useState(false);
   useEffect(() => {
     if (!loading) { setShowSpinner(false); return; }
@@ -237,6 +253,13 @@ export default function App() {
                 )}
               </div>
             </div>
+
+            {/* 오늘 메뉴 업데이트 전 안내 배너 */}
+            {showStaleMenuBanner && (
+              <div style={{ background: "#FEFCE8", border: "1px solid #FDE047", borderLeft: "4px solid #EAB308", borderRadius: 10, padding: "10px 14px", marginBottom: 14, fontSize: 13, color: "#713F12", fontWeight: 500 }}>
+                오늘 메뉴는 보통 오전 8시경 업데이트됩니다
+              </div>
+            )}
 
             {/* 마지막 업데이트 */}
             {data?.updatedAt && (
