@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { getHoliday } from "./utils/holidays";
 import { todayKST } from "./utils/date";
 import { stripMenuPrice } from "./utils/menu";
@@ -18,6 +18,7 @@ function addDayToISO(iso, days) {
 }
 
 export default function MenuCalendar({ selectedDate, dataByDate, availableDates = [], onDateSelect, onMonthChange }) {
+  const gridRef = useRef(null); // 달력 그리드 컨테이너 ref (포커스 스코핑용)
   const availableSet = useMemo(() => new Set(availableDates), [availableDates]);
 
   const [view, setView] = useState(() => ({
@@ -69,9 +70,9 @@ export default function MenuCalendar({ selectedDate, dataByDate, availableDates 
         setView({ year: ty, month: tm });
         onMonthChange?.(new Date(ty, tm - 1, 1));
       }
-      // data-date selector로 해당 버튼 포커스
+      // 그리드 컨테이너 내에서만 포커스 탐색 (document 전체 스캔 방지)
       setTimeout(() => {
-        document.querySelector(`[data-date="${target}"]`)?.focus();
+        gridRef.current?.querySelector(`[data-date="${target}"]`)?.focus();
       }, 0);
       return;
     }
@@ -101,7 +102,7 @@ export default function MenuCalendar({ selectedDate, dataByDate, availableDates 
       </div>
 
       {/* 달력 본체 */}
-      <div role="grid" aria-label={`${year}년 ${month}월 식단 달력`} style={{ padding: 6, background: "#fff" }}>
+      <div ref={gridRef} role="grid" aria-label={`${year}년 ${month}월 식단 달력`} style={{ padding: 6, background: "#fff" }}>
         {weeks.map((week, wi) => (
           <div key={wi} role="row" style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2, marginBottom: 2 }}>
             {week.map((day, di) => {
