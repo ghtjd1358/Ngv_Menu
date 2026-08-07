@@ -36,8 +36,7 @@ function formatKSTTime(isoStr) {
 
 // ── App ───────────────────────────────────────────────────────────────────────
 export default function App() {
-  const TODAY    = useMemo(() => getKSTDateStr(0), []);
-  const TOMORROW = useMemo(() => getKSTDateStr(1), []);
+  const TODAY = useMemo(() => getKSTDateStr(0), []);
 
   const [selectedDate, setSelectedDate] = useState(TODAY);
   const [dataByDate,   setDataByDate]   = useState({});
@@ -108,7 +107,8 @@ export default function App() {
   // ── Effects ─────────────────────────────────────────────────────────────────
   useEffect(() => {
     fetchMenu(TODAY);
-    fetchMenu(TOMORROW, true);
+    // 향후 14일치 조용히 미리 로드 — dates API에 없는 날짜도 캘린더에 바로 표시
+    for (let i = 1; i <= 14; i++) fetchMenu(getKSTDateStr(i), true);
     fetch(`${API_BASE}/api/menu/dates`)
       .then(r => r.json())
       .then(json => {
@@ -121,7 +121,7 @@ export default function App() {
         });
       })
       .catch(() => {});
-  }, [TODAY, TOMORROW, fetchMonthData]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [TODAY, fetchMonthData]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleMonthChange = useCallback((date) => {
     fetchMonthData(date.getFullYear(), date.getMonth() + 1);
