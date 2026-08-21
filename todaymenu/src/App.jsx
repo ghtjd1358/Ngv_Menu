@@ -269,6 +269,17 @@ export default function App() {
               <div key={selectedDate} className="anim-fade-up" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                 {r301 && <RestaurantCard restaurant={r301} accentColor={C.accent} primary />}
                 {dure && <RestaurantCard restaurant={dure} accentColor={C.green} />}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  <button type="button"
+                    onClick={() => window.open("https://m.booking.naver.com/order/bizes/1397805/items/6691932?theme=place&service-target=map-pc&refererCode=menutab&lang=ko&area=ple", "_blank", "noopener,noreferrer")}
+                    style={{ background: C.card, color: C.text1, border: `1.5px solid ${C.border}`, borderRadius: 12, padding: "13px 0", fontSize: 14, fontWeight: 600, cursor: "pointer", boxShadow: "0 1px 4px rgba(20,30,60,0.06)" }}>
+                    포케 올데이 메뉴
+                  </button>
+                  <button type="button" onClick={() => setQuiznosOpen(true)}
+                    style={{ background: C.card, color: C.text1, border: `1.5px solid ${C.border}`, borderRadius: 12, padding: "13px 0", fontSize: 14, fontWeight: 600, cursor: "pointer", boxShadow: "0 1px 4px rgba(20,30,60,0.06)" }}>
+                    퀴즈노스 주문
+                  </button>
+                </div>
               </div>
             ) : null}
           </div>
@@ -283,17 +294,6 @@ export default function App() {
               onDateSelect={setSelectedDate}
               onMonthChange={handleMonthChange}
             />
-            <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-              <button type="button"
-                onClick={() => window.open("https://m.booking.naver.com/order/bizes/1397805/items/6691932?theme=place&service-target=map-pc&refererCode=menutab&lang=ko&area=ple", "_blank", "noopener,noreferrer")}
-                style={{ background: C.card, color: C.text1, border: `1.5px solid ${C.border}`, borderRadius: 12, padding: "13px 0", fontSize: 14, fontWeight: 600, cursor: "pointer", boxShadow: "0 1px 4px rgba(20,30,60,0.06)" }}>
-                포케 올데이 메뉴
-              </button>
-              <button type="button" onClick={() => setQuiznosOpen(true)}
-                style={{ background: C.card, color: C.text1, border: `1.5px solid ${C.border}`, borderRadius: 12, padding: "13px 0", fontSize: 14, fontWeight: 600, cursor: "pointer", boxShadow: "0 1px 4px rgba(20,30,60,0.06)" }}>
-                퀴즈노스 주문
-              </button>
-            </div>
           </div>
 
         </div>
