@@ -176,7 +176,7 @@ export default function App() {
   return (
     <div style={{ minHeight: "100dvh", background: C.bg, fontFamily: "'Pretendard', 'Noto Sans KR', -apple-system, sans-serif" }}>
       {/* Header */}
-      <header style={{ background: C.header, position: "sticky", top: 0, zIndex: 20 }}>
+      <header style={{ background: "rgba(17,24,39,0.88)", backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)", borderBottom: "1px solid rgba(255,255,255,0.06)", position: "sticky", top: 0, zIndex: 20 }}>
         <div style={{ maxWidth: 1600, margin: "0 auto", padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <img src="/favicon.svg" alt="" style={{ width: 28, height: 28, borderRadius: 8 }} />
@@ -195,7 +195,7 @@ export default function App() {
             {/* 날짜 헤더 */}
             <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 14 }}>
               <div>
-                <p style={{ margin: "0 0 3px", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: C.text3 }}>
+                <p style={{ margin: "0 0 6px", display: "inline-flex", alignItems: "center", background: C.accentLight, color: C.accent, borderRadius: 99, padding: "3px 10px", fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>
                   {relativeDateLabel(selectedDate, TODAY)}
                 </p>
                 <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: C.text1, lineHeight: 1.2 }}>
@@ -270,13 +270,13 @@ export default function App() {
                 {r301 && <RestaurantCard restaurant={r301} accentColor={C.accent} primary />}
                 {dure && <RestaurantCard restaurant={dure} accentColor={C.green} />}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                  <button type="button"
+                  <button type="button" className="menu-action-btn"
                     onClick={() => window.open("https://m.booking.naver.com/order/bizes/1397805/items/6691932?theme=place&service-target=map-pc&refererCode=menutab&lang=ko&area=ple", "_blank", "noopener,noreferrer")}
-                    style={{ background: C.card, color: C.text1, border: `1.5px solid ${C.border}`, borderRadius: 12, padding: "13px 0", fontSize: 14, fontWeight: 600, cursor: "pointer", boxShadow: "0 1px 4px rgba(20,30,60,0.06)" }}>
+                    style={{ background: "linear-gradient(160deg, #ffffff 0%, #f5f7ff 100%)", color: C.text1, border: "1px solid rgba(59,91,219,0.1)", borderRadius: 14, padding: "13px 0", fontSize: 14, fontWeight: 600, cursor: "pointer", boxShadow: "0 1px 3px rgba(15,25,60,0.05), 0 4px 12px rgba(15,25,60,0.04), inset 0 1px 0 rgba(255,255,255,0.9)" }}>
                     포케 올데이 메뉴
                   </button>
-                  <button type="button" onClick={() => setQuiznosOpen(true)}
-                    style={{ background: C.card, color: C.text1, border: `1.5px solid ${C.border}`, borderRadius: 12, padding: "13px 0", fontSize: 14, fontWeight: 600, cursor: "pointer", boxShadow: "0 1px 4px rgba(20,30,60,0.06)" }}>
+                  <button type="button" className="menu-action-btn" onClick={() => setQuiznosOpen(true)}
+                    style={{ background: "linear-gradient(160deg, #ffffff 0%, #f5f7ff 100%)", color: C.text1, border: "1px solid rgba(59,91,219,0.1)", borderRadius: 14, padding: "13px 0", fontSize: 14, fontWeight: 600, cursor: "pointer", boxShadow: "0 1px 3px rgba(15,25,60,0.05), 0 4px 12px rgba(15,25,60,0.04), inset 0 1px 0 rgba(255,255,255,0.9)" }}>
                     퀴즈노스 주문
                   </button>
                 </div>

@@ -28,13 +28,15 @@ export default function RestaurantCard({ restaurant, accentColor, primary = fals
   const color = accentColor || C.accent;
 
   return (
-    <div style={{ background: C.card, borderRadius: 16, boxShadow: "0 2px 16px rgba(20,30,60,0.08)", borderLeft: `5px solid ${color}`, display: "flex", flexDirection: "column", width: "100%", minWidth: 0 }}>
-      <div style={{ padding: "18px 20px 14px" }}>
-        <p style={{ margin: 0, fontSize: 17, fontWeight: 700, color: C.text1 }}>{name}</p>
-        {hours && <p style={{ margin: "4px 0 0", fontSize: 13, color: C.text3 }}>{hours}</p>}
-      </div>
-      <div style={{ height: 1, background: C.border, margin: "0 20px" }} />
-      <div style={{ padding: "14px 20px 18px", minWidth: 0, width: "100%" }}>
+    <div className="restaurant-card-outer" style={{ borderRadius: 20, padding: 2, background: "rgba(234,237,252,0.65)", border: "1px solid rgba(255,255,255,0.9)", boxShadow: "0 2px 4px rgba(15,25,60,0.04), 0 8px 28px rgba(15,25,60,0.07)", width: "100%", minWidth: 0 }}>
+      <div style={{ background: C.card, borderRadius: 18, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+        <div style={{ height: 3, background: `linear-gradient(90deg, ${color} 0%, ${color}40 100%)`, flexShrink: 0 }} />
+        <div style={{ padding: "16px 20px 12px" }}>
+          <p style={{ margin: 0, fontSize: 17, fontWeight: 700, color: C.text1 }}>{name}</p>
+          {hours && <p style={{ margin: "3px 0 0", fontSize: 12, color: C.text3 }}>{hours}</p>}
+        </div>
+        <div style={{ height: 1, background: `linear-gradient(90deg, transparent 0%, ${C.border} 12%, ${C.border} 88%, transparent 100%)`, margin: "0 20px" }} />
+        <div style={{ padding: "12px 20px 16px", minWidth: 0, width: "100%" }}>
         {mainItems.length === 0 && !hasOrder ? (
           <p style={{ margin: 0, fontSize: 13, color: C.text3 }}>메뉴 정보 없음</p>
         ) : (
@@ -56,6 +58,7 @@ export default function RestaurantCard({ restaurant, accentColor, primary = fals
             )}
           </>
         )}
+        </div>
       </div>
     </div>
   );
