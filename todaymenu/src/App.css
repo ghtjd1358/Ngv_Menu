@@ -64,6 +64,11 @@ html { scrollbar-gutter: stable; -webkit-font-smoothing: antialiased; -moz-osx-f
   box-shadow: 0 4px 8px rgba(15,25,60,0.04), 0 14px 36px rgba(15,25,60,0.1) !important;
 }
 
+/* 달력 셀 호버 — 선택/오늘/비활성 제외 */
+.calendar-cell:not([aria-pressed="true"]):not(:disabled):hover {
+  background: rgba(147, 197, 253, 0.22) !important;
+}
+
 /* ── 2-column PC layout ── */
 .app-layout {
   display: grid;

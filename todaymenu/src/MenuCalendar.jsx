@@ -39,6 +39,7 @@ function CalendarCell({ iso, day, isSelected, isToday, isRed, isSat, holiday, me
 
   return (
     <button
+      className="calendar-cell"
       role="gridcell"
       aria-label={`${day}일${holiday ? ` ${holiday}` : ""}${isToday ? " 오늘" : ""}${isSelected ? " 선택됨" : ""}`}
       aria-pressed={isSelected}
