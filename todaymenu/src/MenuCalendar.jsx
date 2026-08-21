@@ -133,7 +133,7 @@ export default function MenuCalendar({ selectedDate, dataByDate, availableDates 
         <div role="row" style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", paddingBottom: 8 }}>
           {DAY_NAMES.map((name, i) => (
             <div key={name} role="columnheader" aria-label={DAY_LABELS[i]}
-              style={{ textAlign: "center", fontSize: 12, fontWeight: 700, color: i === 0 ? "#F87171" : i === 6 ? "#93C5FD" : "rgba(255,255,255,0.55)" }}>
+              style={{ textAlign: "center", fontSize: 12, fontWeight: 700, color: i === 0 ? "#F87171" : i === 6 ? "#93C5FD" : "#ffffff" }}>
               {name}
             </div>
           ))}
