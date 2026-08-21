@@ -49,22 +49,18 @@ html { scrollbar-gutter: stable; -webkit-font-smoothing: antialiased; -moz-osx-f
 
 /* ── Premium hover effects ── */
 .menu-action-btn {
-  transition: transform 0.22s cubic-bezier(0.32, 0.72, 0, 1),
-              box-shadow 0.22s cubic-bezier(0.32, 0.72, 0, 1);
+  transition: box-shadow 0.22s cubic-bezier(0.32, 0.72, 0, 1);
 }
 .menu-action-btn:hover {
-  transform: translateY(-2px);
   box-shadow: 0 2px 8px rgba(15,25,60,0.05), 0 8px 24px rgba(59,91,219,0.11),
               inset 0 1px 0 rgba(255,255,255,1) !important;
 }
-.menu-action-btn:active { transform: scale(0.97); }
+.menu-action-btn:active { opacity: 0.85; }
 
 .restaurant-card-outer {
-  transition: transform 0.25s cubic-bezier(0.32, 0.72, 0, 1),
-              box-shadow 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+  transition: box-shadow 0.25s cubic-bezier(0.32, 0.72, 0, 1);
 }
 .restaurant-card-outer:hover {
-  transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(15,25,60,0.04), 0 14px 36px rgba(15,25,60,0.1) !important;
 }
 
