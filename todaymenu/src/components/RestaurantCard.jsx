@@ -12,9 +12,18 @@ function CopyIcon() {
   );
 }
 
+function CheckIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  );
+}
+
 export default function RestaurantCard({ restaurant, accentColor, primary = false, onCopied }) {
   const { name, hours, lunch } = restaurant;
   const [showOrder, setShowOrder] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const { mainItems, orderItems } = useMemo(() => {
     const allParsed = (Array.isArray(lunch) ? lunch : []).map(parseMenuLine);
@@ -43,7 +52,11 @@ export default function RestaurantCard({ restaurant, accentColor, primary = fals
       ...mainItems.filter(i => i.type === "item").map(i => i.name),
     ];
     navigator.clipboard.writeText(lines.join("\n"))
-      .then(() => onCopied?.("복사됐어요!"))
+      .then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
+        onCopied?.("복사됐어요!");
+      })
       .catch(() => onCopied?.("복사 실패"));
   };
 
@@ -57,8 +70,9 @@ export default function RestaurantCard({ restaurant, accentColor, primary = fals
             {hours && <p style={{ margin: "3px 0 0", fontSize: 12, color: C.text3 }}>{hours}</p>}
           </div>
           {hasCopyable && (
-            <button type="button" onClick={handleCopy} className="copy-btn" title="메뉴 복사" aria-label="메뉴 복사">
-              <CopyIcon />
+            <button type="button" onClick={handleCopy} className="copy-btn" title="메뉴 복사" aria-label="메뉴 복사"
+              style={{ color: copied ? "#059669" : undefined, transition: "color 0.2s" }}>
+              {copied ? <CheckIcon /> : <CopyIcon />}
             </button>
           )}
         </div>
