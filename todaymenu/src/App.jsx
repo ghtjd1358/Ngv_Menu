@@ -206,7 +206,7 @@ export default function App() {
                 {/* 새로고침 버튼 */}
                 <button type="button" onClick={() => fetchMenuFresh(selectedDate)} disabled={loading}
                   title="메뉴 새로고침"
-                  style={{ background: C.card, border: `1.5px solid ${C.border}`, borderRadius: 8, padding: "6px 10px", fontSize: 14, cursor: loading ? "default" : "pointer", color: loading ? C.text3 : C.text2, display: "flex", alignItems: "center" }}>
+                  style={{ background: "linear-gradient(160deg, #ffffff 0%, #f5f7ff 100%)", border: "1px solid rgba(59,91,219,0.1)", borderRadius: 8, padding: "6px 10px", fontSize: 14, cursor: loading ? "default" : "pointer", color: loading ? C.text3 : C.text1, display: "flex", alignItems: "center", boxShadow: "0 1px 3px rgba(15,25,60,0.05), 0 4px 12px rgba(15,25,60,0.04), inset 0 1px 0 rgba(255,255,255,0.9)" }}>
                   ↻
                 </button>
                 {selectedDate !== TODAY && (

@@ -41,7 +41,7 @@ export default function RestaurantCard({ restaurant, accentColor, primary = fals
           <p style={{ margin: 0, fontSize: 13, color: C.text3 }}>메뉴 정보 없음</p>
         ) : (
           <>
-            {mainItems.length > 0 && <ItemList items={mainItems} fontSize={primary ? 17 : 15} />}
+            {mainItems.length > 0 && <ItemList items={mainItems} fontSize={primary ? 19 : 17} />}
             {hasOrder && (
               <div style={{ marginTop: mainItems.length > 0 ? 12 : 0 }}>
                 <button type="button" onClick={() => setShowOrder(s => !s)}
