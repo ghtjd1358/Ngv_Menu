@@ -3,7 +3,16 @@ import { C } from "../constants";
 import { parseMenuLine, isSectionHidden } from "../utils/menu";
 import ItemList from "./ItemList";
 
-export default function RestaurantCard({ restaurant, accentColor, primary = false }) {
+function CopyIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="9" y="9" width="13" height="13" rx="2" />
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+    </svg>
+  );
+}
+
+export default function RestaurantCard({ restaurant, accentColor, primary = false, onCopied }) {
   const { name, hours, lunch } = restaurant;
   const [showOrder, setShowOrder] = useState(false);
 
@@ -26,14 +35,32 @@ export default function RestaurantCard({ restaurant, accentColor, primary = fals
 
   const hasOrder = orderItems.some(i => i.type === "item");
   const color = accentColor || C.accent;
+  const hasCopyable = mainItems.some(i => i.type === "item");
+
+  const handleCopy = () => {
+    const lines = [
+      `${name} 점심`,
+      ...mainItems.filter(i => i.type === "item").map(i => i.name),
+    ];
+    navigator.clipboard.writeText(lines.join("\n"))
+      .then(() => onCopied?.("복사됐어요!"))
+      .catch(() => onCopied?.("복사 실패"));
+  };
 
   return (
     <div className="restaurant-card-outer" style={{ borderRadius: 20, padding: 2, background: "rgba(234,237,252,0.65)", border: "1px solid rgba(255,255,255,0.9)", boxShadow: "0 2px 4px rgba(15,25,60,0.04), 0 8px 28px rgba(15,25,60,0.07)", width: "100%", minWidth: 0 }}>
       <div style={{ background: C.card, borderRadius: 18, overflow: "hidden", display: "flex", flexDirection: "column" }}>
         <div style={{ height: 3, background: `linear-gradient(90deg, ${color} 0%, ${color}40 100%)`, flexShrink: 0 }} />
-        <div style={{ padding: "16px 20px 12px" }}>
-          <p style={{ margin: 0, fontSize: 17, fontWeight: 700, color: C.text1 }}>{name}</p>
-          {hours && <p style={{ margin: "3px 0 0", fontSize: 12, color: C.text3 }}>{hours}</p>}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px 12px" }}>
+          <div>
+            <p style={{ margin: 0, fontSize: 17, fontWeight: 700, color: C.text1 }}>{name}</p>
+            {hours && <p style={{ margin: "3px 0 0", fontSize: 12, color: C.text3 }}>{hours}</p>}
+          </div>
+          {hasCopyable && (
+            <button type="button" onClick={handleCopy} className="copy-btn" title="메뉴 복사" aria-label="메뉴 복사">
+              <CopyIcon />
+            </button>
+          )}
         </div>
         <div style={{ height: 1, background: `linear-gradient(90deg, transparent 0%, ${C.border} 12%, ${C.border} 88%, transparent 100%)`, margin: "0 20px" }} />
         <div style={{ padding: "12px 20px 16px", minWidth: 0, width: "100%" }}>

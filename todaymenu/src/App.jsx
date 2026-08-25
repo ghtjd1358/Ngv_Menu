@@ -47,6 +47,13 @@ export default function App() {
   const [quiznosItems, setQuiznosItems] = useState([]);
   const [quiznosDrinks, setQuiznosDrinks] = useState([]);
   const [quiznosUpdatedAt, setQuiznosUpdatedAt] = useState("");
+  const [toast, setToast] = useState(null);
+
+  const showToast = useCallback((msg) => {
+    const id = Date.now();
+    setToast({ msg, id });
+    setTimeout(() => setToast(t => t?.id === id ? null : t), 2000);
+  }, []);
 
   // 탭 제목 동적 업데이트
   useEffect(() => {
@@ -267,8 +274,8 @@ export default function App() {
               </div>
             ) : !loading && data ? (
               <div key={selectedDate} className="anim-fade-up" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                {r301 && <RestaurantCard restaurant={r301} accentColor={C.accent} primary />}
-                {dure && <RestaurantCard restaurant={dure} accentColor={C.green} />}
+                {r301 && <RestaurantCard restaurant={r301} accentColor={C.accent} primary onCopied={showToast} />}
+                {dure && <RestaurantCard restaurant={dure} accentColor={C.green} onCopied={showToast} />}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                   <button type="button" className="menu-action-btn"
                     onClick={() => window.open("https://m.booking.naver.com/order/bizes/1397805/items/6691932?theme=place&service-target=map-pc&refererCode=menutab&lang=ko&area=ple", "_blank", "noopener,noreferrer")}
@@ -306,6 +313,8 @@ export default function App() {
         drinks={quiznosDrinks}
         updatedAt={quiznosUpdatedAt}
       />
+
+      {toast && <div className="toast">{toast.msg}</div>}
     </div>
   );
 }
