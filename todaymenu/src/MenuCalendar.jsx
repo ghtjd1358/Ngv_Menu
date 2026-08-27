@@ -109,11 +109,11 @@ export default function MenuCalendar({ selectedDate, dataByDate, availableDates 
   const keyboardNav = useRef(false);
 
   useEffect(() => {
-    if (keyboardNav.current && gridRef.current) {
+    if (gridRef.current) {
       const selected = gridRef.current.querySelector('[aria-pressed="true"]');
       selected?.focus();
-      keyboardNav.current = false;
     }
+    keyboardNav.current = false;
   }, [selectedDate]);
 
   const handleGridKeyDown = (e) => {
