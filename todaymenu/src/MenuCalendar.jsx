@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { getHoliday } from "./utils/holidays";
 import { todayKST } from "./utils/date";
 import { stripMenuPrice } from "./utils/menu";
@@ -105,6 +105,39 @@ export default function MenuCalendar({ selectedDate, dataByDate, availableDates 
   const today = useMemo(() => todayKST(), []);
   const { year, month } = view;
 
+  const gridRef = useRef(null);
+  const keyboardNav = useRef(false);
+
+  useEffect(() => {
+    if (keyboardNav.current && gridRef.current) {
+      const selected = gridRef.current.querySelector('[aria-pressed="true"]');
+      selected?.focus();
+      keyboardNav.current = false;
+    }
+  }, [selectedDate]);
+
+  const handleGridKeyDown = (e) => {
+    const arrows = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 };
+    const delta = arrows[e.key];
+    if (delta === undefined) return;
+    e.preventDefault();
+
+    const current = new Date(selectedDate + "T00:00:00");
+    current.setDate(current.getDate() + delta);
+
+    const nextYear = current.getFullYear();
+    const nextMonth = current.getMonth() + 1;
+    const nextISO = `${nextYear}-${String(nextMonth).padStart(2, "0")}-${String(current.getDate()).padStart(2, "0")}`;
+
+    if (nextYear !== year || nextMonth !== month) {
+      setView({ year: nextYear, month: nextMonth });
+      onMonthChange?.(new Date(nextYear, nextMonth - 1, 1));
+    }
+
+    keyboardNav.current = true;
+    onDateSelect(nextISO);
+  };
+
   const navigate = (delta) => {
     let y = year, m = month + delta;
     if (m < 1) { m = 12; y--; }
@@ -141,7 +174,7 @@ export default function MenuCalendar({ selectedDate, dataByDate, availableDates 
       </div>
 
       {/* 달력 본체 */}
-      <div role="grid" aria-label={`${year}년 ${month}월 식단 달력`} style={{ padding: 6, background: "#fff" }}>
+      <div ref={gridRef} role="grid" aria-label={`${year}년 ${month}월 식단 달력`} onKeyDown={handleGridKeyDown} style={{ padding: 6, background: "#fff" }}>
         {weeks.map((week, wi) => (
           <div key={wi} role="row" style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2, marginBottom: 2 }}>
             {week.map((day, di) => {
